@@ -1,0 +1,36 @@
+# ─── Secrets & credentials ───
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*-credentials.json
+gen-lang-client-*.json
+service-account*.json
+secrets/
+
+# ─── Python ───
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# ─── Node ───
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+
+# ─── OS / Editor ───
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+Thumbs.db
