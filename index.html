@@ -1,0 +1,2866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D. Fesenmaier · Portfolio</title>
+  <meta property="og:title" content="D. Fesenmaier · Portfolio">
+  <meta property="og:description" content="Lead Data Analyst · Marketing Analytics, Agentic AI, Data Storytelling">
+  <meta property="og:url" content="https://dnfesenmaier.github.io">
+  <meta name="twitter:title" content="D. Fesenmaier · Portfolio">
+  <meta name="twitter:description" content="Lead Data Analyst · Marketing Analytics, Agentic AI, Data Storytelling">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    /* ─────────────────────────────────────────────
+       RESET & TOKENS
+    ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:           #0A0A0B;
+      --ink-2:         #0F1014;
+      --ink-3:         #15171D;
+      --border:        rgba(255,255,255,.06);
+      --border-2:      rgba(255,255,255,.1);
+      --blue:          #2563EB;
+      --blue-light:    #4D8BFF;
+      --blue-glow:     rgba(37,99,235,.18);
+      --text:          #F5F5F7;
+      --text-2:        #A1A1AA;
+      --text-3:        #6B7280;
+      --text-4:        #3F3F46;
+      --accent:        #2563EB;
+      --serif-accent:  #E4E4E7;
+      --radius-sm:     8px;
+      --radius:        16px;
+      --radius-lg:     24px;
+      --ease:          cubic-bezier(.22,.61,.36,1);
+      --ease-spring:   cubic-bezier(.34,1.56,.64,1);
+      --mono:          'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--ink);
+      color: var(--text);
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.65;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+    }
+
+    /* Subtle noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      opacity: .025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    a { color: var(--text); text-decoration: none; }
+    a:hover { color: var(--blue-light); }
+    ::selection { background: rgba(37,99,235,.3); color: #fff; }
+
+    /* ─────────────────────────────────────────────
+       SCROLL PROGRESS
+    ───────────────────────────────────────────── */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; z-index: 999;
+      height: 2px; width: 0%;
+      background: var(--blue);
+      transition: width .1s linear;
+      box-shadow: 0 0 12px rgba(37,99,235,.5);
+    }
+
+    /* ─────────────────────────────────────────────
+       SPLIT-STICKY LAYOUT (Brittany Chiang pattern)
+    ───────────────────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 max(2rem, 4vw);
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar {
+      position: sticky; top: 0;
+      height: 100vh;
+      padding: 6rem 0 4rem;
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .main { padding: 6rem 0 4rem; }
+
+    /* ─── Sidebar content ─── */
+    .sidebar-top {}
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; }
+      50% { opacity: .5; }
+    }
+
+    .sidebar-name {
+      font-family: 'Archivo', sans-serif;
+      font-size: clamp(3.4rem, 6vw, 5rem);
+      font-weight: 900; line-height: .95;
+      letter-spacing: -.05em;
+      margin-bottom: 1.2rem;
+      color: var(--text);
+    }
+    .sidebar-name em {
+      font-family: 'Instrument Serif', serif;
+      font-weight: 400; font-style: italic;
+      color: var(--serif-accent);
+      letter-spacing: -.02em;
+    }
+
+    .sidebar-role {
+      font-size: 1.1rem; font-weight: 500;
+      color: var(--text-2);
+      margin-bottom: 1.8rem;
+      letter-spacing: -.015em;
+      display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+    }
+    .sidebar-role-logo {
+      width: 18px; height: 18px; border-radius: 4px;
+      object-fit: contain;
+    }
+    .sidebar-role-at { color: var(--text-3); font-weight: 400; }
+    .sidebar-role-company { color: var(--text); font-weight: 600; }
+
+    /* Prominent "Currently building" panel */
+    .now-panel {
+      padding: .95rem 1.2rem;
+      border-radius: var(--radius);
+      box-shadow: inset 0 0 0 1px rgba(37,99,235,.18),
+                  0 12px 40px -16px rgba(37,99,235,.25);
+      background: linear-gradient(135deg, rgba(37,99,235,.05), rgba(37,99,235,.01));
+      margin-bottom: 2rem;
+      display: flex; align-items: center; gap: .85rem;
+      flex-wrap: wrap;
+    }
+    .now-panel-label {
+      font-family: var(--mono);
+      font-size: .65rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .16em;
+      color: var(--text-3);
+      display: flex; align-items: center; gap: .55rem;
+      flex-shrink: 0;
+    }
+    .now-panel-label::before {
+      content: ''; width: 7px; height: 7px; border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2.4s ease infinite;
+    }
+    .now-panel-label::after {
+      content: ''; width: 1px; height: 14px;
+      background: rgba(255,255,255,.12);
+      margin-left: .25rem;
+    }
+    .now-panel-text {
+      font-family: var(--mono);
+      font-size: .95rem; font-weight: 500;
+      color: var(--blue-light);
+      letter-spacing: -.01em;
+      flex: 1; min-width: 0;
+    }
+    .now-panel-text::after {
+      content: '';
+      display: inline-block;
+      width: 2px; height: 1em;
+      margin-left: 3px; vertical-align: -1px;
+      background: var(--blue-light);
+      animation: blink .7s step-end infinite;
+    }
+
+    .sidebar-tagline {
+      font-size: .92rem; color: var(--text-2);
+      max-width: 360px; line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    /* In-page nav */
+    .sidebar-nav {
+      display: flex; flex-direction: column; gap: .9rem;
+      margin-bottom: auto;
+    }
+    .sidebar-nav-item {
+      display: flex; align-items: center; gap: 1rem;
+      font-family: var(--mono);
+      font-size: .72rem; font-weight: 500;
+      text-transform: uppercase; letter-spacing: .14em;
+      color: var(--text-3);
+      transition: color .25s, gap .25s var(--ease);
+      cursor: pointer;
+    }
+    .sidebar-nav-item .line {
+      width: 32px; height: 1px;
+      background: var(--text-4);
+      transition: width .25s var(--ease), background .25s;
+    }
+    .sidebar-nav-item:hover,
+    .sidebar-nav-item.active {
+      color: var(--text);
+    }
+    .sidebar-nav-item:hover .line,
+    .sidebar-nav-item.active .line {
+      width: 64px; background: var(--text);
+    }
+
+    /* Socials */
+    .sidebar-socials {
+      display: flex; gap: 1.1rem;
+      margin-top: 2rem;
+    }
+    .social-link {
+      width: 22px; height: 22px;
+      color: var(--text-3);
+      transition: color .2s, transform .2s var(--ease);
+      cursor: pointer;
+    }
+    .social-link:hover {
+      color: var(--text);
+      transform: translateY(-3px);
+    }
+    .social-link svg { width: 100%; height: 100%; }
+
+    /* ─────────────────────────────────────────────
+       MAIN CONTENT SECTIONS
+    ───────────────────────────────────────────── */
+    .section {
+      margin-bottom: 6rem;
+      scroll-margin-top: 2rem;
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: .7rem; font-weight: 500;
+      text-transform: uppercase; letter-spacing: .18em;
+      color: var(--text-3);
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+    /* Mobile shows section labels */
+    @media (max-width: 860px) {
+      .section-label { display: block; }
+    }
+
+    /* ─── INTRO (replaces hero on main side) ─── */
+    .intro-block {
+      margin-bottom: 5rem;
+    }
+
+    .typewriter-wrap {
+      font-family: var(--mono);
+      font-size: .82rem;
+      color: var(--text-3);
+      display: flex; align-items: center; gap: .8rem;
+      margin-bottom: 2rem;
+      animation: fadeInUp .8s var(--ease) .2s both;
+    }
+    .typewriter-label {
+      text-transform: uppercase; letter-spacing: .14em;
+      flex-shrink: 0;
+    }
+    .typewriter-text {
+      color: var(--blue-light); font-weight: 500;
+    }
+    .typewriter-text::after {
+      content: '';
+      display: inline-block;
+      width: 2px; height: 1em;
+      margin-left: 3px; vertical-align: -1px;
+      background: var(--blue-light);
+      animation: blink .7s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .intro-text {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: var(--text-2);
+      margin-bottom: 1.5rem;
+      animation: fadeInUp .8s var(--ease) .3s both;
+    }
+    .intro-text strong { color: var(--text); font-weight: 500; }
+    .intro-text a {
+      color: var(--blue-light);
+      border-bottom: 1px dotted rgba(77,139,255,.4);
+      transition: color .2s, border-color .2s;
+    }
+    .intro-text a:hover { color: #fff; border-color: #fff; }
+
+    /* ─── EXPERIENCE LIST (row-dim hover) ─── */
+    .exp-list {
+      transition: opacity .3s;
+    }
+    .exp-list:hover .exp-item:not(:hover) {
+      opacity: .4;
+    }
+
+    .exp-item {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 1.2rem;
+      padding: 1.5rem;
+      margin: 0 -1.5rem 1rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      position: relative;
+      transition: opacity .3s, background .3s, transform .3s var(--ease);
+      animation: fadeInUp .7s var(--ease) both;
+    }
+    .exp-item:hover {
+      background: rgba(255,255,255,.025);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+    }
+    .exp-item:hover .exp-arrow {
+      transform: translate(4px, -4px);
+      color: var(--blue-light);
+    }
+
+    .exp-date {
+      font-family: var(--mono);
+      font-size: .7rem; font-weight: 500;
+      color: var(--text-3);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding-top: .25rem;
+    }
+
+    .exp-body {}
+
+    .exp-role-line {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 1rem; margin-bottom: .5rem;
+    }
+    .exp-role {
+      font-family: 'Archivo', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -.015em;
+      display: flex; align-items: center; gap: .6rem;
+      flex-wrap: wrap;
+    }
+    .exp-role .at {
+      color: var(--text-3); font-weight: 500;
+    }
+    .exp-arrow {
+      width: 14px; height: 14px;
+      color: var(--text-3);
+      transition: transform .25s var(--ease), color .25s;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .exp-company-line {
+      display: flex; align-items: center; gap: .55rem;
+      font-size: .82rem; color: var(--text-3);
+      margin-bottom: .9rem;
+    }
+    .exp-logo {
+      width: 14px; height: 14px; border-radius: 3px;
+      object-fit: contain;
+    }
+    .exp-desc {
+      font-size: .88rem; color: var(--text-2);
+      line-height: 1.7;
+      margin-bottom: .9rem;
+    }
+    .exp-desc strong { color: var(--text); font-weight: 500; }
+
+    .exp-tags {
+      display: flex; flex-wrap: wrap; gap: .35rem;
+    }
+    .tag {
+      font-family: var(--mono);
+      font-size: .68rem; font-weight: 500;
+      padding: .2rem .55rem;
+      border-radius: 99px;
+      background: rgba(37,99,235,.08);
+      color: var(--blue-light);
+      border: 1px solid rgba(37,99,235,.15);
+    }
+
+    /* ─── HOW I WORK (numbered process) ─── */
+    .process-grid {
+      display: grid; gap: 0;
+      margin-bottom: 2rem;
+    }
+    .process-item {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 2rem;
+      padding: 1.8rem 0;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+    }
+    .process-item:last-child { border-bottom: none; }
+    .process-num {
+      font-family: 'Archivo', sans-serif;
+      font-size: 3.5rem; font-weight: 900;
+      color: transparent;
+      -webkit-text-stroke: 1px var(--text-4);
+      text-stroke: 1px var(--text-4);
+      line-height: 1; letter-spacing: -.04em;
+      transition: -webkit-text-stroke .3s, color .3s;
+    }
+    .process-item:hover .process-num {
+      color: var(--blue-light);
+      -webkit-text-stroke-color: var(--blue-light);
+    }
+    .process-title {
+      font-family: 'Archivo', sans-serif;
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -.02em;
+      margin-bottom: .5rem;
+    }
+    .process-desc {
+      font-size: .87rem; color: var(--text-2);
+      line-height: 1.7;
+    }
+
+    /* ─── BENTO IMPACT GRID ─── */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, auto);
+      gap: 1rem;
+    }
+
+    .bento-card {
+      background: rgba(255,255,255,.02);
+      box-shadow: inset 0 0 0 1px var(--border),
+                  0 20px 60px -20px rgba(0,0,0,.4);
+      border-radius: var(--radius);
+      padding: 1.6rem;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow .3s, transform .3s var(--ease);
+      --mx: 50%;
+      --my: 50%;
+    }
+    .bento-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(
+        300px circle at var(--mx) var(--my),
+        rgba(77,139,255,.08),
+        transparent 60%
+      );
+      opacity: 0;
+      transition: opacity .3s;
+      pointer-events: none;
+    }
+    .bento-card:hover {
+      transform: translateY(-3px);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.12),
+                  0 24px 60px -20px rgba(37,99,235,.18);
+    }
+    .bento-card:hover::before { opacity: 1; }
+
+    .bento-card.large {
+      grid-column: span 2;
+      grid-row: span 2;
+      padding: 2rem;
+    }
+    .bento-card.wide {
+      grid-column: span 3;
+    }
+
+    .bento-icon {
+      width: 22px; height: 22px;
+      color: var(--blue-light);
+      margin-bottom: 1rem;
+    }
+    .bento-card.large .bento-icon {
+      width: 28px; height: 28px;
+    }
+
+    .bento-title {
+      font-family: 'Archivo', sans-serif;
+      font-size: .95rem; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -.015em;
+      margin-bottom: .45rem;
+    }
+    .bento-card.large .bento-title {
+      font-size: 1.4rem;
+      margin-bottom: .8rem;
+    }
+    .bento-desc {
+      font-size: .78rem; color: var(--text-2);
+      line-height: 1.6;
+    }
+    .bento-card.large .bento-desc {
+      font-size: .92rem; line-height: 1.7;
+    }
+
+    /* Marquee */
+    .marquee {
+      overflow: hidden; position: relative;
+      mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+      -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+    }
+    .marquee-track {
+      display: flex; gap: 3rem;
+      animation: marquee 28s linear infinite;
+      width: max-content;
+    }
+    .marquee-item {
+      font-family: var(--mono);
+      font-size: .85rem; font-weight: 500;
+      color: var(--text-3);
+      white-space: nowrap;
+      display: flex; align-items: center; gap: .55rem;
+    }
+    .marquee-item::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: var(--text-4);
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ─── SKILLS PILLS ─── */
+    .skill-groups {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    }
+    .skill-group {
+      padding: 1.3rem 1.4rem;
+      border-radius: var(--radius);
+      box-shadow: inset 0 0 0 1px var(--border);
+      background: rgba(255,255,255,.02);
+    }
+    .skill-group-title {
+      font-family: var(--mono);
+      font-size: .65rem; font-weight: 500;
+      text-transform: uppercase; letter-spacing: .15em;
+      color: var(--blue-light); margin-bottom: .9rem;
+    }
+    .skill-group-pills {
+      display: flex; flex-wrap: wrap; gap: .4rem;
+    }
+    .pill {
+      font-family: var(--mono);
+      font-size: .7rem; font-weight: 500;
+      padding: .25rem .65rem;
+      border-radius: 99px;
+      background: rgba(255,255,255,.03);
+      color: var(--text-2);
+      box-shadow: inset 0 0 0 1px var(--border);
+    }
+
+    /* ─── SPEAKING ─── */
+    .speaking-card {
+      padding: 1.8rem;
+      border-radius: var(--radius);
+      box-shadow: inset 0 0 0 1px var(--border);
+      background: rgba(255,255,255,.02);
+      transition: box-shadow .3s, transform .3s var(--ease);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      --mx: 50%;
+      --my: 50%;
+    }
+    .speaking-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(
+        300px circle at var(--mx) var(--my),
+        rgba(77,139,255,.08),
+        transparent 60%
+      );
+      opacity: 0;
+      transition: opacity .3s;
+      pointer-events: none;
+    }
+    .speaking-card:hover {
+      transform: translateY(-3px);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.12),
+                  0 24px 60px -20px rgba(37,99,235,.18);
+    }
+    .speaking-card:hover::before { opacity: 1; }
+
+    .speaking-eyebrow {
+      font-family: var(--mono);
+      font-size: .68rem; font-weight: 500;
+      text-transform: uppercase; letter-spacing: .15em;
+      color: var(--blue-light); margin-bottom: .55rem;
+    }
+    .speaking-title {
+      font-family: 'Archivo', sans-serif;
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -.02em;
+      margin-bottom: .8rem;
+      line-height: 1.3;
+    }
+    .speaking-body {
+      font-size: .85rem; color: var(--text-2);
+      line-height: 1.7;
+    }
+
+    /* ─── EDUCATION ─── */
+    .edu-list { display: flex; flex-direction: column; gap: 1rem; }
+    .edu-item {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 1.2rem;
+      padding: 1.2rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .edu-item:last-child { border-bottom: none; }
+    .edu-degree {
+      font-family: var(--mono);
+      font-size: .7rem; font-weight: 500;
+      text-transform: uppercase; letter-spacing: .12em;
+      color: var(--text-3);
+      padding-top: .15rem;
+    }
+    .edu-school {
+      font-family: 'Archivo', sans-serif;
+      font-size: .95rem; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -.015em;
+      margin-bottom: .2rem;
+    }
+    .edu-detail {
+      font-size: .8rem; color: var(--text-3);
+    }
+
+    /* ─── CONTACT ─── */
+    .contact-section {
+      padding: 2rem 0;
+    }
+    .contact-text {
+      font-size: 1rem; color: var(--text-2);
+      line-height: 1.8; margin-bottom: 1.8rem;
+      max-width: 500px;
+    }
+    .contact-buttons {
+      display: flex; flex-wrap: wrap; gap: .7rem;
+    }
+    .contact-btn {
+      display: inline-flex; align-items: center; gap: .55rem;
+      padding: .75rem 1.4rem;
+      border-radius: 12px;
+      font-size: .85rem; font-weight: 500;
+      box-shadow: inset 0 0 0 1px var(--border-2);
+      color: var(--text-2);
+      transition: all .3s var(--ease);
+      cursor: pointer;
+    }
+    .contact-btn:hover {
+      color: var(--text);
+      transform: translateY(-2px);
+      box-shadow: inset 0 0 0 1px var(--blue-light),
+                  0 8px 24px rgba(37,99,235,.18);
+    }
+    .contact-btn.primary {
+      background: var(--blue);
+      color: #fff;
+      box-shadow: inset 0 0 0 1px var(--blue),
+                  0 4px 12px rgba(37,99,235,.3);
+    }
+    .contact-btn.primary:hover {
+      background: #1d4ed8;
+      box-shadow: 0 12px 32px rgba(37,99,235,.45);
+    }
+    .contact-btn svg { width: 16px; height: 16px; }
+
+    /* ─── OVERSIZED FOOTER WORDMARK ─── */
+    /* ─── Background wordmark at top (mirrors footer) ─── */
+    .header-wordmark {
+      position: absolute;
+      top: 1.5rem;
+      left: 0; right: 0;
+      text-align: center;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+      user-select: none;
+    }
+    .header-wordmark-text {
+      font-family: 'Archivo', sans-serif;
+      font-size: clamp(3.5rem, 15vw, 12rem);
+      font-weight: 900;
+      letter-spacing: -.05em;
+      line-height: .9;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,255,255,.06);
+      text-stroke: 1px rgba(255,255,255,.06);
+      white-space: nowrap;
+      mask-image: linear-gradient(180deg, black 0%, rgba(0,0,0,.5) 60%, transparent 100%);
+      -webkit-mask-image: linear-gradient(180deg, black 0%, rgba(0,0,0,.5) 60%, transparent 100%);
+    }
+
+    .footer-wordmark {
+      width: 100%;
+      padding: 4rem 0 1.5rem;
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+    .footer-wordmark-text {
+      font-family: 'Archivo', sans-serif;
+      font-size: clamp(3.5rem, 14vw, 11rem);
+      font-weight: 900;
+      letter-spacing: -.05em;
+      line-height: .9;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,255,255,.1);
+      text-stroke: 1px rgba(255,255,255,.1);
+      white-space: nowrap;
+      user-select: none;
+    }
+    .footer-meta {
+      font-family: var(--mono);
+      font-size: .7rem; color: var(--text-3);
+      margin-top: 1rem;
+    }
+
+    /* Reveal animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .reveal {
+      opacity: 0; transform: translateY(20px);
+      transition: opacity .8s var(--ease), transform .8s var(--ease);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ─────────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .layout { grid-template-columns: 1fr; gap: 0; }
+      .sidebar {
+        position: relative;
+        height: auto;
+        padding: 5rem 0 2rem;
+      }
+      .sidebar-nav { display: none; }
+      .main { padding-top: 2rem; }
+    }
+
+    @media (max-width: 768px) {
+      .bento-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .bento-card.large { grid-column: span 2; grid-row: span 1; }
+      .bento-card.wide { grid-column: span 2; }
+      .skill-groups { grid-template-columns: 1fr; }
+      .exp-item, .edu-item {
+        grid-template-columns: 1fr;
+        gap: .5rem;
+      }
+      .process-item {
+        grid-template-columns: 60px 1fr;
+        gap: 1rem;
+      }
+      .process-num { font-size: 2.5rem; }
+
+      /* Stack "Currently building" label above typewriter on mobile */
+      .now-panel {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .5rem;
+      }
+      .now-panel-label::after { display: none; }
+      .now-panel-text { width: 100%; }
+
+      /* Make header + footer wordmarks fit within mobile viewport */
+      .header-wordmark-text,
+      .footer-wordmark-text {
+        font-size: 10vw;
+      }
+      .header-wordmark-text {
+        -webkit-text-stroke: 1px rgba(255,255,255,.09);
+        text-stroke: 1px rgba(255,255,255,.09);
+      }
+    }
+
+    /* ─────────────────────────────────────────────
+       JOURNEY MAP (Leaflet dark overrides)
+    ───────────────────────────────────────────── */
+    #journey-map {
+      height: 520px;
+      position: relative;
+      z-index: 0;
+      /* border-radius clips tiles; Leaflet adds overflow:hidden on .leaflet-container */
+      border-radius: 16px;
+    }
+    /* Let popups escape the map container visually — keepInView handles bounds */
+    .leaflet-container {
+      border-radius: 16px;
+    }
+    .leaflet-control-attribution {
+      background: rgba(8,8,10,.8) !important;
+      color: rgba(255,255,255,.22) !important;
+      font-size: 9px !important;
+      border-radius: 0 !important;
+      padding: 3px 7px !important;
+    }
+    .leaflet-control-attribution a { color: rgba(255,255,255,.35) !important; }
+    .leaflet-bar {
+      border: none !important;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.1),
+                  0 4px 16px rgba(0,0,0,.4) !important;
+      border-radius: 10px !important;
+      overflow: hidden;
+    }
+    .leaflet-bar a {
+      background: rgba(8,8,10,.92) !important;
+      color: rgba(255,255,255,.45) !important;
+      border-bottom: 1px solid rgba(255,255,255,.06) !important;
+      width: 30px !important; height: 30px !important;
+      line-height: 30px !important; font-size: 17px !important;
+    }
+    .leaflet-bar a:hover {
+      background: rgba(37,99,235,.45) !important;
+      color: #fff !important;
+    }
+    .leaflet-popup-content-wrapper {
+      background: rgba(10,11,14,.97) !important;
+      color: #F5F5F7 !important;
+      border-radius: 14px !important;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.08),
+                  0 20px 60px rgba(0,0,0,.85) !important;
+      padding: 0 !important;
+    }
+    .leaflet-popup-content { margin: 0 !important; line-height: 1.5 !important; }
+    .leaflet-popup-tip { background: rgba(10,11,14,.97) !important; }
+    .leaflet-popup-close-button {
+      color: rgba(255,255,255,.35) !important;
+      font-size: 16px !important;
+      padding: 8px !important;
+      right: 4px !important; top: 4px !important;
+    }
+    .leaflet-popup-close-button:hover { color: #fff !important; }
+    .map-popup-period {
+      font-family: var(--mono);
+      font-size: .58rem; font-weight: 500;
+      text-transform: uppercase; letter-spacing: .15em;
+      color: rgba(255,255,255,.3);
+      margin-bottom: .28rem;
+    }
+    .map-popup-company {
+      font-family: 'Archivo', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      letter-spacing: -.015em; margin-bottom: .2rem;
+    }
+    .map-popup-role { font-size: .77rem; color: rgba(255,255,255,.5); margin-bottom: .12rem; line-height: 1.4; }
+    .map-popup-city {
+      font-family: var(--mono);
+      font-size: .6rem; color: rgba(255,255,255,.28);
+      text-transform: uppercase; letter-spacing: .1em;
+    }
+    .map-popup-detail {
+      font-size: .73rem;
+      color: rgba(255,255,255,.38);
+      line-height: 1.55;
+      margin-top: .45rem;
+      padding-top: .4rem;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+    .map-popup-inner { padding: .85rem 1.1rem 1rem; min-width: 230px; }
+    @keyframes markerPulse {
+      0%, 100% { box-shadow: 0 0 0 2px rgba(0,212,170,.35), 0 0 12px rgba(0,212,170,.55); }
+      50%       { box-shadow: 0 0 0 6px rgba(0,212,170,.12), 0 0 24px rgba(0,212,170,.75); }
+    }
+    .map-reset-btn {
+      background: rgba(10,11,14,.92) !important;
+      border: 1px solid rgba(255,255,255,.14) !important;
+      color: rgba(255,255,255,.6) !important;
+      border-radius: 8px !important;
+      padding: 5px 11px !important;
+      cursor: pointer !important;
+      font-family: var(--mono) !important;
+      font-size: 10px !important;
+      font-weight: 500 !important;
+      letter-spacing: .05em !important;
+      white-space: nowrap !important;
+      transition: color .15s, border-color .15s !important;
+      display: block !important;
+    }
+    .map-reset-btn:hover {
+      color: #fff !important;
+      border-color: rgba(255,255,255,.32) !important;
+    }
+
+    /* ─── JOURNEY WRAP ─── */
+    .journey-wrap {
+      background: rgba(255,255,255,.02);
+      box-shadow: inset 0 0 0 1px var(--border);
+      border-radius: var(--radius);
+      padding: 1.6rem 1rem 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ─── SKILLS FULLBLEED ─── */
+    /* Full-bleed: break out of the 2-column .layout grid */
+    .skills-fullbleed {
+      width: 100vw;
+      position: relative;
+      left: 50%;
+      right: 50%;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      padding: 2.5rem max(2rem, 6vw) 3rem;
+      overflow: hidden;
+    }
+    .skills-fullbleed-inner {
+      max-width: 1680px;
+      margin: 0 auto;
+    }
+
+    /* Full-bleed scene — no chrome. Container exists only for sizing + scoping events. */
+    .constellation-wrap {
+      background: transparent;
+      box-shadow: none;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+      position: relative;
+      overflow: visible;
+      /* Reduced height so nodes fill more of the visible area */
+      height: max(85vh, 720px);
+      min-height: 720px;
+      /* Scroll-driven depth push: JS sets --depth-z in [-1, 1] */
+      --depth-z: 0;
+    }
+    /* Wider-than-viewport canvas — the constellation extends past both edges,
+       so dragging can pull distant off-screen nodes into the foreground. */
+    .constellation-svg {
+      width: 150vw;
+      height: 100%;
+      display: block;
+      overflow: visible;
+      margin-left: -25vw;
+    }
+
+    /* Scene transform — combines parallax (--px,--py), ambient drift (--ax,--ay), scroll depth (--depth-z). */
+    .const-scene {
+      transform:
+        translate3d(
+          calc(var(--px, 0px) + var(--ax, 0px)),
+          calc(var(--py, 0px) + var(--ay, 0px)),
+          0
+        )
+        scale(calc(1 + var(--depth-z, 0) * 0.04));
+      transform-origin: 50% 50%;
+      transform-box: fill-box;
+      will-change: transform;
+    }
+
+    .const-edge {
+      stroke: rgba(255,255,255,.08);
+      stroke-width: 1;
+      transition: stroke .35s var(--ease), stroke-width .35s var(--ease), opacity .35s var(--ease);
+      pointer-events: none;
+    }
+    .const-edge.highlighted {
+      stroke: rgba(77,139,255,.65);
+      stroke-width: 1.6;
+    }
+    .const-edge.faded { opacity: .08; }
+
+    .const-node-group {
+      cursor: grab;
+      transition: opacity .35s var(--ease);
+      will-change: transform, opacity;
+      touch-action: none;
+    }
+    .const-node-group.dimmed { opacity: .12; }
+    .const-node-group.dragging { cursor: grabbing; }
+    .const-node-group.dragging .const-halo { opacity: .28; }
+    .const-node-group.dragging .const-node { stroke-width: 2.6; }
+    .const-node-group.pinned .const-halo { opacity: .18; }
+    .const-node-group.pinned .const-node { stroke-width: 2.2; }
+
+    .const-halo {
+      fill: currentColor;
+      opacity: 0;
+      transition: opacity .35s var(--ease);
+      pointer-events: none;
+    }
+    .const-node-group:hover .const-halo,
+    .const-node-group.is-focused .const-halo {
+      opacity: .22;
+    }
+
+    .const-node {
+      stroke-width: 1.6;
+      transition: stroke-width .25s var(--ease);
+      vector-effect: non-scaling-stroke;
+    }
+    .const-node-group:hover .const-node,
+    .const-node-group.is-focused .const-node {
+      stroke-width: 2.2;
+    }
+
+    .const-label {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      fill: var(--text-2);
+      text-anchor: middle;
+      pointer-events: none;
+      letter-spacing: -.01em;
+      transition: fill .25s var(--ease), opacity .35s var(--ease), font-size .25s var(--ease), font-weight .25s var(--ease);
+      paint-order: stroke;
+      stroke: rgba(10,10,11,.92);
+      stroke-width: 3.5px;
+      stroke-linejoin: round;
+    }
+    .const-label.core {
+      font-size: 15px;
+      font-weight: 700;
+      fill: var(--text);
+    }
+    .const-node-group:hover .const-label,
+    .const-node-group.is-focused .const-label {
+      fill: #fff;
+      opacity: 1 !important;
+    }
+    .const-node-group:focus { outline: none; }
+    .const-node-group:focus-visible .const-node {
+      stroke-width: 2.4;
+      filter: drop-shadow(0 0 6px currentColor);
+    }
+
+    .const-legend {
+      display: flex; flex-wrap: wrap; gap: 1.2rem;
+      justify-content: center;
+      margin-top: 1.2rem; padding: 0 .25rem;
+      font-family: var(--mono);
+      font-size: .65rem; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: .12em;
+    }
+    .const-legend-item {
+      display: flex; align-items: center; gap: .5rem;
+      transition: color .2s;
+    }
+    .const-legend-item:hover { color: var(--text); }
+    .const-legend-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      box-shadow: inset 0 0 0 1.5px currentColor,
+                  0 0 8px currentColor;
+    }
+    .const-hint {
+      font-family: var(--mono);
+      font-size: .62rem;
+      color: var(--text-4);
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      margin-left: auto;
+    }
+
+    /* Group stroke colors — used for the colored ring on each flat node */
+    .const-color-language   { stroke: #ec6e55; }
+    .const-color-data       { stroke: #4D8BFF; }
+    .const-color-ai         { stroke: #7c5af5; }
+    .const-color-mktanalytics { stroke: #00d4aa; }
+    .const-color-channel    { stroke: #f59e0b; }
+    .const-color-platform   { stroke: #f472b6; }
+
+    /* ── Skill tooltip (where I used this skill) ── */
+    .skill-tooltip {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      min-width: 240px;
+      max-width: 320px;
+      padding: .9rem 1rem 1rem;
+      background: rgba(10, 11, 14, .94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.08),
+        0 24px 60px -20px rgba(0,0,0,.7),
+        0 0 0 1px rgba(0,0,0,.4);
+      border-radius: 14px;
+      opacity: 0;
+      transform: translateY(4px) scale(.97);
+      transition: opacity .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
+    }
+    .skill-tooltip.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .skill-tooltip-eyebrow {
+      font-family: var(--mono);
+      font-size: .58rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      color: var(--text-3);
+      margin-bottom: .35rem;
+      display: flex; align-items: center; gap: .45rem;
+    }
+    .skill-tooltip-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+    .skill-tooltip-title {
+      font-family: 'Archivo', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--text);
+      letter-spacing: -.015em;
+      margin-bottom: .65rem;
+      line-height: 1.2;
+    }
+    .skill-tooltip-list {
+      display: flex; flex-direction: column; gap: .45rem;
+      border-top: 1px solid rgba(255,255,255,.06);
+      padding-top: .6rem;
+    }
+    .skill-tooltip-row {
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      gap: .55rem;
+      align-items: baseline;
+    }
+    .skill-tooltip-co {
+      font-family: var(--mono);
+      font-size: .68rem;
+      font-weight: 600;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .skill-tooltip-ctx {
+      font-size: .76rem;
+      color: var(--text-2);
+      line-height: 1.45;
+    }
+    .skill-tooltip-empty {
+      font-size: .76rem;
+      color: var(--text-3);
+      font-style: italic;
+    }
+    @media (max-width: 768px) {
+      .skill-tooltip { min-width: 200px; max-width: 260px; padding: .75rem .85rem; }
+      .skill-tooltip-title { font-size: .95rem; }
+      .skill-tooltip-row { grid-template-columns: 72px 1fr; gap: .45rem; }
+    }
+
+    @media (max-width: 768px) {
+      .skills-fullbleed { padding: 1.8rem 1.2rem 2rem; }
+      .constellation-wrap {
+        height: max(72vh, 580px);
+        min-height: 580px;
+      }
+      .const-legend { gap: .7rem; font-size: .6rem; }
+      .const-hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- Background wordmark at top -->
+<div class="header-wordmark" aria-hidden="true">
+  <div class="header-wordmark-text">DAVID FESENMAIER</div>
+</div>
+
+<div class="layout">
+
+  <!-- ═══════════════════ SIDEBAR (sticky) ═══════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <h1 class="sidebar-name">David<br><em>Fesenmaier</em></h1>
+      <div class="sidebar-role">
+        Lead Data Analyst <span class="sidebar-role-at">@</span>
+        <img src="https://www.google.com/s2/favicons?domain=vanguard.com&sz=64" alt="" class="sidebar-role-logo">
+        <span class="sidebar-role-company">Vanguard</span>
+      </div>
+
+      <div class="now-panel">
+        <div class="now-panel-label">Currently building</div>
+        <div class="now-panel-text" id="typewriter-sidebar"></div>
+      </div>
+
+      <p class="sidebar-tagline">I build data systems that move revenue — marketing analytics, agentic AI, and storytelling across any industry.</p>
+
+      <nav class="sidebar-nav">
+        <a href="#about" class="sidebar-nav-item"><span class="line"></span>About</a>
+        <a href="#journey" class="sidebar-nav-item"><span class="line"></span>Journey</a>
+        <a href="#experience" class="sidebar-nav-item"><span class="line"></span>Experience</a>
+        <a href="#process" class="sidebar-nav-item"><span class="line"></span>How I Work</a>
+        <a href="#impact" class="sidebar-nav-item"><span class="line"></span>Impact</a>
+        <a href="#speaking" class="sidebar-nav-item"><span class="line"></span>Speaking</a>
+        <a href="#skills" class="sidebar-nav-item"><span class="line"></span>Skills</a>
+        <a href="#education" class="sidebar-nav-item"><span class="line"></span>Education</a>
+        <a href="#contact" class="sidebar-nav-item"><span class="line"></span>Contact</a>
+      </nav>
+    </div>
+
+    <div class="sidebar-socials">
+      <a href="https://www.linkedin.com/in/datawithdavid/" target="_blank" rel="noopener" class="social-link" aria-label="LinkedIn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      </a>
+      <a href="mailto:fesenmaierdaniel@gmail.com" class="social-link" aria-label="Email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+      </a>
+      <a href="https://github.com/dnfesenmaier" target="_blank" rel="noopener" class="social-link" aria-label="GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════ MAIN ═══════════════════ -->
+  <main class="main">
+
+    <!-- INTRO -->
+    <section id="about" class="section">
+      <div class="section-label">// About</div>
+      <div class="intro-block">
+        <p class="intro-text">
+          I'm a Lead Data Analyst with a track record of turning raw data into business outcomes that matter — <strong>increased revenue, smarter marketing spend, better customer targeting.</strong> My career spans high-growth tech, enterprise real estate, early-stage startups, and now financial services.
+        </p>
+        <p class="intro-text">
+          At <strong>Vanguard</strong>, I'm building agentic marketing automation tools and AI-ready data infrastructure. Before that I led email analytics and shipped LLM classifiers at <strong>Lennar</strong>, drove ARR growth at <strong>Dropbox</strong> across paid media, built a multi-touch attribution system at <strong>Workrise</strong>, and contributed spatial data to <strong>Apple Maps</strong>.
+        </p>
+        <p class="intro-text">
+          I'm comfortable across the full analytics stack — production SQL, Python pipelines, executive dashboards, A/B testing, and shipping ML-powered products in partnership with data science and engineering.
+        </p>
+      </div>
+    </section>
+
+    <!-- JOURNEY (Real Map) -->
+    <section id="journey" class="section">
+      <div class="section-label">// Journey</div>
+      <div class="journey-wrap" style="padding:0; position:relative;">
+        <div id="journey-map"></div>
+      </div>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section id="experience" class="section">
+      <div class="section-label">// Experience</div>
+      <div class="exp-list">
+
+        <a class="exp-item" href="#">
+          <div class="exp-date">2026 — Now</div>
+          <div class="exp-body">
+            <div class="exp-role-line">
+              <div class="exp-role">Lead Data Analyst <span class="at">·</span> Vanguard</div>
+              <svg class="exp-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </div>
+            <div class="exp-company-line">
+              <img src="https://www.google.com/s2/favicons?domain=vanguard.com&sz=64" alt="" class="exp-logo">
+              Workplace Solutions · Finance
+            </div>
+            <p class="exp-desc">Building <strong>agentic marketing automation tools</strong> and architecting AI-ready data infrastructure — standardizing and scaling datasets to support LLM and ML-powered campaign workflows across retirement products.</p>
+            <div class="exp-tags">
+              <span class="tag">SQL</span><span class="tag">Python</span>
+              <span class="tag">Agentic AI</span><span class="tag">AI-Ready Data</span>
+            </div>
+          </div>
+        </a>
+
+        <a class="exp-item" href="#">
+          <div class="exp-date">2025 — 2026</div>
+          <div class="exp-body">
+            <div class="exp-role-line">
+              <div class="exp-role">Senior Data Analyst <span class="at">·</span> Vanguard</div>
+              <svg class="exp-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </div>
+            <div class="exp-company-line">
+              <img src="https://www.google.com/s2/favicons?domain=vanguard.com&sz=64" alt="" class="exp-logo">
+              Personal Investor · Finance
+            </div>
+            <p class="exp-desc">Delivered data-driven insights for investment operations and client-facing analytics. Built scalable analytical solutions for financial products at one of the world's largest asset managers.</p>
+            <div class="exp-tags">
+              <span class="tag">SQL</span><span class="tag">Python</span>
+              <span class="tag">Investment Analytics</span>
+            </div>
+          </div>
+        </a>
+
+        <a class="exp-item" href="#">
+          <div class="exp-date">2023 — 2025</div>
+          <div class="exp-body">
+            <div class="exp-role-line">
+              <div class="exp-role">Senior Data Analyst <span class="at">·</span> Lennar</div>
+              <svg class="exp-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </div>
+            <div class="exp-company-line">
+              <img src="https://www.google.com/s2/favicons?domain=lennar.com&sz=64" alt="" class="exp-logo">
+              Lennar Corporation · Real Estate
+            </div>
+            <p class="exp-desc">Led all email analytics. Built Lennar's <strong>Customer360 dataset</strong> powering targeting and lead scoring. Shipped an automated <strong>LLM promotion classification system</strong> with RAG + AWS Bedrock for national campaigns.</p>
+            <div class="exp-tags">
+              <span class="tag">AWS Bedrock</span><span class="tag">RAG / LLM</span>
+              <span class="tag">A/B Testing</span><span class="tag">Email Analytics</span>
+              <span class="tag">Lead Scoring</span>
+            </div>
+          </div>
+        </a>
+
+        <a class="exp-item" href="#">
+          <div class="exp-date">2022 — 2023</div>
+          <div class="exp-body">
+            <div class="exp-role-line">
+              <div class="exp-role">Senior Data Analyst <span class="at">·</span> Dropbox</div>
+              <svg class="exp-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </div>
+            <div class="exp-company-line">
+              <img src="https://www.google.com/s2/favicons?domain=dropbox.com&sz=64" alt="" class="exp-logo">
+              Dropbox · SaaS
+            </div>
+            <p class="exp-desc">Analyzed paid media campaigns across mobile, SEM, and display — optimizing multi-million-dollar budgets. Developed mobile marketing strategies that drove significant <strong>ARR growth</strong> and marketing revenue share.</p>
+            <div class="exp-tags">
+              <span class="tag">Paid Media</span><span class="tag">SEM</span>
+              <span class="tag">Mobile Marketing</span><span class="tag">ARR Growth</span>
+            </div>
+          </div>
+        </a>
+
+        <a class="exp-item" href="#">
+          <div class="exp-date">2021 — 2022</div>
+          <div class="exp-body">
+            <div class="exp-role-line">
+              <div class="exp-role">Data Analyst <span class="at">·</span> WorkRise</div>
+              <svg class="exp-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </div>
+            <div class="exp-company-line">
+              <img src="https://www.google.com/s2/favicons?domain=workrise.com&sz=64" alt="" class="exp-logo">
+              WorkRise · Startup
+            </div>
+            <p class="exp-desc">Designed and implemented a <strong>multi-touch attribution system</strong> to measure marketing impact across channels. Built an <strong>upsell propensity model</strong> generating substantial incremental sales via SQL-based audience identification.</p>
+            <div class="exp-tags">
+              <span class="tag">Multi-touch Attribution</span><span class="tag">Propensity Modeling</span>
+              <span class="tag">Salesforce</span><span class="tag">SQL</span>
+            </div>
+          </div>
+        </a>
+
+        <a class="exp-item" href="#">
+          <div class="exp-date">2020 — 2021</div>
+          <div class="exp-body">
+            <div class="exp-role-line">
+              <div class="exp-role">Data Analyst <span class="at">·</span> Dropbox</div>
+              <svg class="exp-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </div>
+            <div class="exp-company-line">
+              <img src="https://www.google.com/s2/favicons?domain=dropbox.com&sz=64" alt="" class="exp-logo">
+              Dropbox · SaaS
+            </div>
+            <p class="exp-desc">Combined customer and product data to inform marketing and product strategies. Partnered with product/marketing stakeholders to surface insights shaping roadmap decisions.</p>
+            <div class="exp-tags">
+              <span class="tag">Customer Insights</span><span class="tag">Product Analytics</span>
+            </div>
+          </div>
+        </a>
+
+        <a class="exp-item" href="#">
+          <div class="exp-date">Earlier</div>
+          <div class="exp-body">
+            <div class="exp-role-line">
+              <div class="exp-role">GIS Analyst <span class="at">·</span> Apple</div>
+              <svg class="exp-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </div>
+            <div class="exp-company-line">
+              <img src="https://www.google.com/s2/favicons?domain=apple.com&sz=64" alt="" class="exp-logo">
+              Apple · Tech
+            </div>
+            <p class="exp-desc">Created, edited, and verified spatial data using proprietary Apple mapping software — contributing to the accuracy of <strong>Apple Maps</strong>. Led an analytics team identifying geographic trends.</p>
+            <div class="exp-tags">
+              <span class="tag">GIS</span><span class="tag">Spatial Data</span>
+            </div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- HOW I WORK (numbered process) -->
+    <section id="process" class="section">
+      <div class="section-label">// How I Work</div>
+      <div class="process-grid">
+        <div class="process-item">
+          <div class="process-num">01</div>
+          <div>
+            <div class="process-title">Discover</div>
+            <p class="process-desc">Start with the business question, not the dataset. Talk to stakeholders, find the decision being made, and reverse-engineer the data that proves or disproves the hypothesis.</p>
+          </div>
+        </div>
+        <div class="process-item">
+          <div class="process-num">02</div>
+          <div>
+            <div class="process-title">Model</div>
+            <p class="process-desc">Build the SQL and Python that holds up to production load. Customer360 datasets, multi-touch attribution, propensity models — engineered to be queried, joined, and trusted.</p>
+          </div>
+        </div>
+        <div class="process-item">
+          <div class="process-num">03</div>
+          <div>
+            <div class="process-title">Ship</div>
+            <p class="process-desc">Get insights in front of the people making decisions. Tableau dashboards, A/B test readouts, exec memos — designed for the audience, not the analyst.</p>
+          </div>
+        </div>
+        <div class="process-item">
+          <div class="process-num">04</div>
+          <div>
+            <div class="process-title">Iterate</div>
+            <p class="process-desc">Measure what shipped, learn from feedback loops, refine models. LLM classifiers improve with RAG; propensity models retrain on new conversions; dashboards evolve with the org.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMPACT (bento) -->
+    <section id="impact" class="section">
+      <div class="section-label">// Impact</div>
+      <div class="bento-grid">
+
+        <div class="bento-card large">
+          <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <div class="bento-title">Agentic Marketing Automation @ Vanguard</div>
+          <p class="bento-desc">Currently architecting autonomous campaign orchestration tools and AI-ready marketing data pipelines. End-to-end workflows that minimize manual intervention while staying compliant in a regulated environment.</p>
+        </div>
+
+        <div class="bento-card">
+          <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+          <div class="bento-title">LLM Classification</div>
+          <p class="bento-desc">Architected automated promotion classification with RAG + AWS Bedrock at Lennar.</p>
+        </div>
+
+        <div class="bento-card">
+          <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          <div class="bento-title">Multi-Touch Attribution</div>
+          <p class="bento-desc">Built an MTA system at WorkRise tying campaign spend to pipeline by channel.</p>
+        </div>
+
+        <div class="bento-card">
+          <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+          <div class="bento-title">Customer360</div>
+          <p class="bento-desc">Lennar's unified customer dataset — backbone of targeting and lead scoring.</p>
+        </div>
+
+        <div class="bento-card">
+          <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          <div class="bento-title">ARR Growth</div>
+          <p class="bento-desc">Mobile + SEM strategies drove significant annual recurring revenue at Dropbox.</p>
+        </div>
+
+        <div class="bento-card">
+          <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          <div class="bento-title">Propensity Modeling</div>
+          <p class="bento-desc">Upsell model identifying high-value audiences and driving incremental sales.</p>
+        </div>
+
+        <div class="bento-card wide">
+          <div class="marquee">
+            <div class="marquee-track">
+              <span class="marquee-item">SQL</span>
+              <span class="marquee-item">Python</span>
+              <span class="marquee-item">Tableau</span>
+              <span class="marquee-item">AWS Bedrock</span>
+              <span class="marquee-item">RAG</span>
+              <span class="marquee-item">pandas</span>
+              <span class="marquee-item">scikit-learn</span>
+              <span class="marquee-item">Salesforce</span>
+              <span class="marquee-item">Google Analytics</span>
+              <span class="marquee-item">A/B Testing</span>
+              <!-- duplicate for seamless loop -->
+              <span class="marquee-item">SQL</span>
+              <span class="marquee-item">Python</span>
+              <span class="marquee-item">Tableau</span>
+              <span class="marquee-item">AWS Bedrock</span>
+              <span class="marquee-item">RAG</span>
+              <span class="marquee-item">pandas</span>
+              <span class="marquee-item">scikit-learn</span>
+              <span class="marquee-item">Salesforce</span>
+              <span class="marquee-item">Google Analytics</span>
+              <span class="marquee-item">A/B Testing</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SPEAKING -->
+    <section id="speaking" class="section">
+      <div class="section-label">// Speaking</div>
+      <div class="speaking-card">
+        <div class="speaking-eyebrow">// Tableau Conference · 2025</div>
+        <h3 class="speaking-title">Driving Content Performance with LLM Text-Classification</h3>
+        <p class="speaking-body">
+          Presented "Content Intelligence with AI + Tableau" — showing how LLMs automate the extraction, classification, and standardization of marketing content at scale. Covered the full pipeline from web scraping and prompt engineering to structured data storage and Tableau dashboards, enabling marketers to connect content themes directly to engagement and conversion metrics.
+        </p>
+      </div>
+    </section>
+
+    <!-- SKILLS — INTERACTIVE CONSTELLATION (full-bleed) -->
+    <section id="skills" class="section">
+      <div class="section-label">// Skills</div>
+      <!-- Header card lives in the main column so it aligns with the Speaking card above -->
+      <div class="speaking-card" style="margin-bottom:1.8rem; cursor:default;">
+        <div class="speaking-eyebrow">// Skill Constellation</div>
+        <h2 class="speaking-title">How the <em style="font-family:'Instrument Serif',serif;font-style:italic;color:var(--serif-accent);">pieces</em> connect.</h2>
+        <p class="speaking-body">A map of the tools, methods, and disciplines I draw on — clustered by domain, linked by how they actually combine in real work. Hover a node to highlight its neighborhood.</p>
+      </div>
+      <div class="skills-fullbleed">
+        <div class="skills-fullbleed-inner">
+          <div class="constellation-wrap" id="constellation-wrap">
+            <svg class="constellation-svg" id="constellation" viewBox="0 0 2700 950" preserveAspectRatio="xMidYMid slice" aria-label="Interactive skill constellation"></svg>
+          </div>
+          <div class="const-legend">
+            <span class="const-legend-item" style="color:#ec6e55"><span class="const-legend-dot"></span>Languages</span>
+            <span class="const-legend-item" style="color:#4D8BFF"><span class="const-legend-dot"></span>Data &amp; Cloud</span>
+            <span class="const-legend-item" style="color:#7c5af5"><span class="const-legend-dot"></span>AI / ML</span>
+            <span class="const-legend-item" style="color:#00d4aa"><span class="const-legend-dot"></span>Marketing Analytics</span>
+            <span class="const-legend-item" style="color:#f59e0b"><span class="const-legend-dot"></span>Channels</span>
+            <span class="const-legend-item" style="color:#f472b6"><span class="const-legend-dot"></span>Platforms</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EDUCATION -->
+    <section id="education" class="section">
+      <div class="section-label">// Education</div>
+      <div class="edu-list">
+        <div class="edu-item">
+          <div class="edu-degree">M.S.</div>
+          <div>
+            <div class="edu-school">Penn State University</div>
+            <div class="edu-detail">Marketing Analytics · World Campus Online</div>
+          </div>
+        </div>
+        <div class="edu-item">
+          <div class="edu-degree">Cert.</div>
+          <div>
+            <div class="edu-school">University of Texas at Austin</div>
+            <div class="edu-detail">Data Science &amp; Visualization · McCombs School of Business · Austin, TX</div>
+          </div>
+        </div>
+        <div class="edu-item">
+          <div class="edu-degree">B.A.</div>
+          <div>
+            <div class="edu-school">Florida International University</div>
+            <div class="edu-detail">Environmental Science · Miami, FL</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="section contact-section">
+      <div class="section-label">// Contact</div>
+      <p class="contact-text">
+        Always open to interesting data challenges, analytics roles, and collaborations. Send me a note — I read everything.
+      </p>
+      <div class="contact-buttons">
+        <a href="https://www.linkedin.com/in/datawithdavid/" target="_blank" rel="noopener" class="contact-btn primary">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          LinkedIn
+        </a>
+        <a href="mailto:fesenmaierdaniel@gmail.com" class="contact-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          Email
+        </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═══════════════════ FOOTER WORDMARK ═══════════════════ -->
+<div class="footer-wordmark">
+  <div class="footer-wordmark-text">DAVID FESENMAIER</div>
+  <div class="footer-meta">// © 2026</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
+<script>
+/* ── Scroll progress ── */
+const bar = document.getElementById('progress-bar');
+window.addEventListener('scroll', () => {
+  const s = window.scrollY;
+  const m = document.body.scrollHeight - window.innerHeight;
+  bar.style.width = (s / m * 100) + '%';
+}, { passive: true });
+
+/* ── Typewriter with shuffled phrases ── */
+const phrases = [
+  'personalized marketing experiences',
+  'agentic marketing automation',
+  'AI-ready data infrastructure',
+  'RAG pipelines for AWS Bedrock',
+  'LLM classifiers for content performance',
+  'mobile attribution at scale',
+  'data narratives that change minds',
+  'self-serve analytics for marketers',
+  'multi-touch attribution systems',
+  'Customer360 datasets',
+  'propensity models for upsell',
+  'A/B testing frameworks in Python',
+  'campaign intelligence at scale',
+  'executive dashboards in Tableau',
+  'paid media optimization',
+  'email analytics suites',
+  'SQL pipelines that ship',
+];
+for (let i = phrases.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [phrases[i], phrases[j]] = [phrases[j], phrases[i]];
+}
+let pi = 0, ci = 0, deleting = false;
+const tw = document.getElementById('typewriter-sidebar');
+function typeLoop() {
+  const phrase = phrases[pi];
+  if (!deleting) {
+    tw.textContent = phrase.slice(0, ci + 1);
+    ci++;
+    if (ci === phrase.length) { deleting = true; setTimeout(typeLoop, 2000); return; }
+  } else {
+    tw.textContent = phrase.slice(0, ci - 1);
+    ci--;
+    if (ci === 0) { deleting = false; pi = (pi + 1) % phrases.length; }
+  }
+  setTimeout(typeLoop, deleting ? 35 : 60);
+}
+typeLoop();
+
+/* ── Cursor-tracked glow on cards ── */
+document.querySelectorAll('.bento-card, .speaking-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+});
+
+/* ── Active nav highlighting (intersection observer) ── */
+const sections = document.querySelectorAll('section[id]');
+const navItems = document.querySelectorAll('.sidebar-nav-item');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${id}`));
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => obs.observe(s));
+
+/* ── Reveal on scroll ── */
+const reveal = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      reveal.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => reveal.observe(el));
+
+/* ─────────────────────────────────────────────
+   JOURNEY MAP — Leaflet, eastern half of US, arched career paths
+───────────────────────────────────────────── */
+(function initJourneyMap() {
+  if (typeof L === 'undefined') return;
+  const mapEl = document.getElementById('journey-map');
+  if (!mapEl) return;
+
+  const US_EAST_BOUNDS = L.latLngBounds([22.0, -104.0], [49.0, -63.0]);
+  const FIT_BOUNDS     = [[24.8, -100.5], [41.5, -66.5]];
+  const FIT_OPTS       = { padding: [28, 36] };
+
+  const map = L.map('journey-map', {
+    scrollWheelZoom: false,
+    zoomControl: true,
+    attributionControl: true,
+    dragging: true,
+    minZoom: 5,
+    maxZoom: 9,
+    maxBounds: US_EAST_BOUNDS,
+    maxBoundsViscosity: 1.0
+  });
+
+  // No-labels tile — removes Golfo de México, The Bahamas, Canada labels, etc.
+  // Geographic context comes from the state boundary GeoJSON + career stop markers
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://osm.org/copyright" target="_blank">OSM</a> &copy; <a href="https://carto.com" target="_blank">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+
+  // ── US-only mask: dark polygon covers Mexico, Canada, Caribbean ──
+  fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries/USA.geo.json')
+    .then(r => r.json())
+    .then(data => {
+      const geom = data.geometry;
+      const polys = geom.type === 'MultiPolygon' ? geom.coordinates : [geom.coordinates];
+      // Find contiguous US (largest ring, center lng between -125 and -67)
+      let contiguousRing = null, maxLen = 0;
+      polys.forEach(poly => {
+        const ring = poly[0];
+        const avgLng = ring.reduce((s, c) => s + c[0], 0) / ring.length;
+        if (avgLng > -125 && avgLng < -67 && ring.length > maxLen) {
+          maxLen = ring.length; contiguousRing = ring;
+        }
+      });
+      if (!contiguousRing) return;
+      const worldBound = [
+        L.latLng(90, -180), L.latLng(90, 180),
+        L.latLng(-90, 180), L.latLng(-90, -180)
+      ];
+      const usHole = contiguousRing.map(c => L.latLng(c[1], c[0]));
+      L.polygon([worldBound, usHole], {
+        color: 'none', fillColor: '#0A0A0B', fillOpacity: 0.94,
+        stroke: false, interactive: false
+      }).addTo(map);
+    })
+    .catch(() => {});
+
+  // ── Eastern US state boundary overlay ──
+  const EASTERN_STATES = new Set([
+    'Alabama','Arkansas','Connecticut','Delaware','Florida','Georgia',
+    'Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana',
+    'Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi',
+    'Missouri','Nebraska','New Hampshire','New Jersey','New York',
+    'North Carolina','Ohio','Oklahoma','Pennsylvania','Rhode Island',
+    'South Carolina','Tennessee','Texas','Vermont','Virginia',
+    'West Virginia','Wisconsin','District of Columbia'
+  ]);
+  fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json')
+    .then(r => r.json())
+    .then(data => {
+      L.geoJSON(data, {
+        filter: f => EASTERN_STATES.has(f.properties.name),
+        style: { color: 'rgba(255,255,255,0.13)', weight: 1, fillOpacity: 0 }
+      }).addTo(map);
+    })
+    .catch(() => {});
+
+  // ── Reset / center view button ──
+  const ResetControl = L.Control.extend({
+    onAdd: function(m) {
+      const btn = L.DomUtil.create('button', 'map-reset-btn');
+      btn.innerHTML = '⊙ Reset View';
+      btn.title = 'Fit all career stops into view';
+      L.DomEvent.on(btn, 'click', function(e) {
+        L.DomEvent.stopPropagation(e);
+        m.fitBounds(FIT_BOUNDS, Object.assign({ animate: true }, FIT_OPTS));
+      });
+      return btn;
+    }
+  });
+  new ResetControl({ position: 'topright' }).addTo(map);
+
+  // ── Bezier arc helper ──
+  function arc(p1, ctrl, p2, steps) {
+    const pts = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps, u = 1 - t;
+      pts.push([
+        u*u*p1[0] + 2*u*t*ctrl[0] + t*t*p2[0],
+        u*u*p1[1] + 2*u*t*ctrl[1] + t*t*p2[1]
+      ]);
+    }
+    return pts;
+  }
+
+  const lineOpts = { color: '#2563EB', weight: 2.5, opacity: 0.65, dashArray: '10 7', lineJoin: 'round', lineCap: 'round' };
+
+  // Arrow decorator (leaflet-polylinedecorator)
+  const canDecorate = typeof L.Symbol !== 'undefined' && typeof L.Symbol.arrowHead !== 'undefined';
+  const arrowPat = canDecorate ? [{
+    offset: '97%', repeat: 0,
+    symbol: L.Symbol.arrowHead({
+      pixelSize: 11, polygon: false,
+      pathOptions: { stroke: true, color: '#4D8BFF', weight: 2.5, opacity: 0.9, fillOpacity: 0 }
+    })
+  }] : null;
+
+  // arrow=true → decorate with arrowhead; false → plain dashed line
+  function addArc(pts, arrow) {
+    const line = L.polyline(pts, lineOpts).addTo(map);
+    if (arrow && arrowPat) L.polylineDecorator(line, { patterns: arrowPat }).addTo(map);
+  }
+
+  // ── Stop coordinates — Dropbox & Workrise nearly overlapping in Austin ──
+  const MiamiFIU    = [25.90, -80.50];
+  const AppleATX    = [31.10, -97.80];
+  const DropboxATX  = [30.35, -97.75];  // slightly north of Workrise, near-overlap
+  const WorkriseATX = [30.28, -97.75];  // just south of Dropbox
+  const LennarMIA   = [25.90, -80.10];
+  const VanguardPHL = [39.9526, -75.1652];
+
+  // ── Career path arcs — arrows only on major city hops ──
+  addArc(arc(MiamiFIU,    [37.0, -91.0],  AppleATX,    70), true);  // Miami → Austin
+  addArc(arc(AppleATX,    [30.8, -98.5],  DropboxATX,  15), false); // Austin internal
+  addArc(arc(DropboxATX,  [30.0, -97.9],  WorkriseATX, 10), false); // Austin internal
+  addArc(arc(DropboxATX,  [22.5, -90.5],  LennarMIA,   70), true);  // Austin → Miami
+  addArc(arc(LennarMIA,   [34.0, -67.0],  VanguardPHL, 70), true);  // Miami → Philadelphia
+
+  // ── Career stops — lp = label position: top | bottom | left | right ──
+  const stops = [
+    {
+      lat: 25.90, lng: -80.50, lp: 'left',
+      company: 'FIU', role: 'B.A. Environmental Science',
+      city: 'Miami, FL', period: 'Pre-2020',
+      detail: 'Florida International University. The foundation before pivoting into spatial data and tech — where curiosity about geography and systems first took hold.',
+      color: '#4D8BFF', current: false
+    },
+    {
+      lat: 31.10, lng: -97.80, lp: 'top',
+      company: 'Apple', role: 'GIS Analyst · Apple Maps',
+      city: 'North Austin, TX', period: 'Earlier',
+      detail: 'Created, edited, and verified spatial data using proprietary Apple mapping software. Led an analytics team identifying geographic trends and data quality improvements across Apple Maps.',
+      color: '#ec6e55', current: false
+    },
+    {
+      lat: 30.35, lng: -97.75, lp: 'bottom',
+      company: 'Dropbox', role: 'Data Analyst · Product Insights',
+      city: 'Downtown Austin, TX', period: '2020 — 2021',
+      detail: 'Combined customer and product data to surface insights shaping roadmap decisions. Partnered with marketing and product stakeholders to drive outcomes for millions of users globally.',
+      color: '#4D8BFF', current: false
+    },
+    {
+      lat: 30.28, lng: -97.75, lp: 'right',
+      company: 'Workrise', role: 'Data Analyst · Attribution & Propensity',
+      city: 'Downtown Austin, TX', period: '2021 — 2022',
+      detail: 'Designed a full multi-touch attribution system tying campaign spend to pipeline by channel. Built an upsell propensity model via SQL-based audience scoring that drove substantial incremental sales.',
+      color: '#00d4aa', current: false
+    },
+    {
+      lat: 25.90, lng: -80.10, lp: 'right',
+      company: 'Lennar', role: 'Sr Analyst · LLM + RAG + Customer360',
+      city: 'Miami, FL', period: '2023 — 2025',
+      detail: 'Led all email analytics. Built Lennar\'s Customer360 dataset powering targeting & lead scoring. Shipped an LLM promotion classifier with RAG + AWS Bedrock — presented at Tableau Conference 2025.',
+      color: '#f59e0b', current: false
+    },
+    {
+      lat: 39.9526, lng: -75.1652, lp: 'bottom',
+      company: 'Vanguard', role: 'Lead Analyst · Agentic Marketing',
+      city: 'Philadelphia, PA', period: '2025 — Now',
+      detail: 'Architecting agentic marketing automation tools and AI-ready data infrastructure for retirement product campaigns. Standardizing datasets to support LLM and ML-powered workflows at enterprise scale.',
+      color: '#00d4aa', current: true
+    }
+  ];
+
+  // Label CSS by position — uses absolute positioning so icon size = dot only
+  function labelCSS(color, lp) {
+    const base = `position:absolute;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:600;color:${color};background:rgba(10,11,14,.88);padding:2px 6px;border-radius:4px;border:1px solid rgba(255,255,255,.1);line-height:1.4;letter-spacing:.01em;pointer-events:none;`;
+    const pos = {
+      top:    'bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);',
+      bottom: 'top:calc(100% + 4px);left:50%;transform:translateX(-50%);',
+      right:  'left:calc(100% + 5px);top:50%;transform:translateY(-50%);',
+      left:   'right:calc(100% + 5px);top:50%;transform:translateY(-50%);',
+    };
+    return base + (pos[lp] || pos.bottom);
+  }
+
+  stops.forEach(s => {
+    const sz = s.current ? 17 : 12;
+    const pulse = s.current ? 'animation:markerPulse 2s ease-in-out infinite;' : '';
+    // Western markers (Austin area): popup opens RIGHT to avoid left-edge clipping
+    const openRight = s.lng < -90;
+    const pa = openRight ? [sz / 2 + 140, -(sz / 4)] : [0, -(sz / 2 + 12)];
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="position:relative;width:${sz}px;height:${sz}px;cursor:pointer;">
+        <div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${s.color};border:2.5px solid rgba(255,255,255,.9);box-shadow:0 0 14px ${s.color},0 2px 8px rgba(0,0,0,.5);${pulse}"></div>
+        <div style="${labelCSS(s.color, s.lp)}">${s.company}</div>
+      </div>`,
+      iconSize: [sz, sz],
+      iconAnchor: [sz / 2, sz / 2],
+      popupAnchor: pa
+    });
+
+    const html = `<div class="map-popup-inner">
+      <div class="map-popup-period">${s.period}</div>
+      <div class="map-popup-company" style="color:${s.color}">${s.company}</div>
+      <div class="map-popup-role">${s.role}</div>
+      <div class="map-popup-city">${s.city}</div>
+      <div class="map-popup-detail">${s.detail}</div>
+    </div>`;
+
+    L.marker([s.lat, s.lng], { icon })
+      .bindPopup(html, {
+        maxWidth: 260,
+        closeButton: true,
+        keepInView: true,
+        autoPan: true,
+        autoPanPadding: [30, 30]
+      })
+      .addTo(map);
+  });
+
+  // ── City name labels: Austin, Miami, Philadelphia ──
+  [
+    { lat: 30.55, lng: -96.20, name: 'Austin' },
+    { lat: 26.28, lng: -80.30, name: 'Miami' },
+    { lat: 40.22, lng: -75.18, name: 'Philadelphia' },
+  ].forEach(c => {
+    L.marker([c.lat, c.lng], {
+      icon: L.divIcon({
+        className: '',
+        html: `<div style="text-align:center;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:500;color:rgba(255,255,255,.36);letter-spacing:.07em;white-space:nowrap;pointer-events:none;text-shadow:0 1px 5px rgba(0,0,0,.95);">${c.name}</div>`,
+        iconSize: [140, 16],
+        iconAnchor: [70, 8]
+      }),
+      interactive: false,
+      keyboard: false
+    }).addTo(map);
+  });
+
+  map.fitBounds(FIT_BOUNDS, FIT_OPTS);
+})();
+
+/* ─────────────────────────────────────────────
+   SKILL CONSTELLATION — vanilla force-directed 3D-feel graph
+───────────────────────────────────────────── */
+(function initConstellation() {
+  const svg = document.getElementById('constellation');
+  const wrap = document.getElementById('constellation-wrap');
+  if (!svg || !wrap) return;
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const W = 2700, H = 950;
+  const NS = 'http://www.w3.org/2000/svg';
+
+  // ── Group definitions: color + cluster anchor (hexagonal layout) ──
+  // Canvas is 150% of the viewport — clusters spread wider so some live partially
+  // off-screen. Foreground (close-z) clusters anchor near center; back clusters
+  // anchor toward the side regions that are off-screen at rest.
+  const cx = W / 2, cy = H / 2;
+  const clusterR = 560; // radius of cluster-anchor ring — wider spread fills more screen
+  const groups = {
+    language:      { color: '#ec6e55', light: '#ffb198', ax: cx,                   ay: cy + clusterR * 0.85 },
+    data:          { color: '#4D8BFF', light: '#a8c7ff', ax: cx - clusterR * 0.95, ay: cy - clusterR * 0.55 },
+    ai:            { color: '#7c5af5', light: '#c1aef9', ax: cx + clusterR * 0.95, ay: cy - clusterR * 0.55 },
+    mktanalytics:  { color: '#00d4aa', light: '#7df0d4', ax: cx - clusterR * 1.85, ay: cy + clusterR * 0.95 },
+    channel:       { color: '#f59e0b', light: '#fcd28a', ax: cx + clusterR * 1.85, ay: cy + clusterR * 0.95 },
+    platform:      { color: '#f472b6', light: '#fcc4e1', ax: cx,                   ay: cy - clusterR * 1.10 },
+  };
+  const groupClass = {
+    language: 'const-color-language',
+    data: 'const-color-data',
+    ai: 'const-color-ai',
+    mktanalytics: 'const-color-mktanalytics',
+    channel: 'const-color-channel',
+    platform: 'const-color-platform',
+  };
+
+  // ── Nodes: importance 3 = core (r=14), 2 = strong (r=10), 1 = secondary (r=7) ──
+  const nodes = [
+    // Languages
+    { id: 'sql',         label: 'SQL',             group: 'language',     importance: 3 },
+    { id: 'python',      label: 'Python',          group: 'language',     importance: 3 },
+    { id: 'r',           label: 'R',               group: 'language',     importance: 1 },
+    { id: 'bash',        label: 'Bash',            group: 'language',     importance: 1 },
+
+    // Data & Cloud
+    { id: 'aws',         label: 'AWS',             group: 'data',         importance: 3 },
+    { id: 's3',          label: 'S3',              group: 'data',         importance: 1 },
+    { id: 'lambda',      label: 'Lambda',          group: 'data',         importance: 1 },
+    { id: 'pandas',      label: 'pandas',          group: 'data',         importance: 2 },
+    { id: 'pipelines',   label: 'Data Pipelines',  group: 'data',         importance: 2 },
+    { id: 'c360',        label: 'Customer360',     group: 'data',         importance: 2 },
+
+    // AI / ML
+    { id: 'bedrock',     label: 'AWS Bedrock',     group: 'ai',           importance: 3 },
+    { id: 'rag',         label: 'RAG',             group: 'ai',           importance: 3 },
+    { id: 'llm',         label: 'LLM Classify',    group: 'ai',           importance: 3 },
+    { id: 'agentic',     label: 'Agentic',         group: 'ai',           importance: 2 },
+    { id: 'sklearn',     label: 'scikit-learn',    group: 'ai',           importance: 2 },
+    { id: 'embeddings',  label: 'Embeddings',      group: 'ai',           importance: 2 },
+    { id: 'vector',      label: 'Vector Search',   group: 'ai',           importance: 1 },
+    { id: 'prompt',      label: 'Prompt Eng.',     group: 'ai',           importance: 1 },
+    { id: 'propensity',  label: 'Propensity',      group: 'ai',           importance: 2 },
+
+    // Marketing Analytics
+    { id: 'attribution', label: 'Attribution',     group: 'mktanalytics', importance: 3 },
+    { id: 'mta',         label: 'Multi-Touch',     group: 'mktanalytics', importance: 2 },
+    { id: 'ab',          label: 'A/B Testing',     group: 'mktanalytics', importance: 2 },
+    { id: 'segment',     label: 'Segmentation',    group: 'mktanalytics', importance: 2 },
+    { id: 'leadscore',   label: 'Lead Scoring',    group: 'mktanalytics', importance: 2 },
+    { id: 'ltv',         label: 'LTV Modeling',    group: 'mktanalytics', importance: 1 },
+    { id: 'cohort',      label: 'Cohort Analysis', group: 'mktanalytics', importance: 1 },
+    { id: 'mobattr',     label: 'Mobile Attribution', group: 'mktanalytics', importance: 2 },
+    { id: 'story',       label: 'Data Storytelling', group: 'mktanalytics', importance: 1 },
+
+    // Channels
+    { id: 'paid',        label: 'Paid Media',      group: 'channel',      importance: 2 },
+    { id: 'sem',         label: 'SEM',             group: 'channel',      importance: 2 },
+    { id: 'email',       label: 'Email',           group: 'channel',      importance: 2 },
+    { id: 'mobile',      label: 'Mobile',          group: 'channel',      importance: 2 },
+    { id: 'display',     label: 'Display',         group: 'channel',      importance: 1 },
+
+    // Platforms
+    { id: 'tableau',     label: 'Tableau',         group: 'platform',     importance: 3 },
+    { id: 'salesforce',  label: 'Salesforce',      group: 'platform',     importance: 2 },
+    { id: 'ga',          label: 'Google Analytics', group: 'platform',    importance: 2 },
+    { id: 'gads',        label: 'Google Ads',      group: 'platform',     importance: 2 },
+    { id: 'dashboards',  label: 'Exec Dashboards', group: 'platform',     importance: 1 },
+  ];
+
+  // ── Where each skill was actually used (tooltip content) ──
+  const usage = {
+    // Languages
+    sql:         [
+      { co: 'Vanguard',   ctx: 'Marketing & participant analytics' },
+      { co: 'Lennar',     ctx: 'Customer & content data pipelines' },
+      { co: 'Dropbox',    ctx: 'Mobile attribution queries' },
+      { co: 'Workrise',   ctx: 'Energy operations analytics' },
+      { co: 'Apple',      ctx: 'Apple Maps spatial queries' },
+    ],
+    python:      [
+      { co: 'Vanguard',   ctx: 'Agentic automation, RAG workflows' },
+      { co: 'Lennar',     ctx: 'LLM pipelines, propensity models' },
+      { co: 'Dropbox',    ctx: 'A/B testing & attribution analysis' },
+    ],
+    r:           [
+      { co: 'Penn State', ctx: 'Marketing Analytics M.S. coursework' },
+    ],
+    bash:        [
+      { co: 'Vanguard',   ctx: 'Pipeline orchestration scripts' },
+      { co: 'Lennar',     ctx: 'AWS workflow automation' },
+    ],
+
+    // Data & Cloud
+    aws:         [
+      { co: 'Vanguard',   ctx: 'Agentic AI infrastructure' },
+      { co: 'Lennar',     ctx: 'Bedrock + Lambda + S3 stack' },
+    ],
+    s3:          [
+      { co: 'Lennar',     ctx: 'Embedding & document storage' },
+      { co: 'Vanguard',   ctx: 'Marketing data lake' },
+    ],
+    lambda:      [
+      { co: 'Lennar',     ctx: 'Serverless RAG endpoints' },
+      { co: 'Vanguard',   ctx: 'Event-driven marketing workflows' },
+    ],
+    pandas:      [
+      { co: 'Vanguard',   ctx: 'Daily marketing analysis' },
+      { co: 'Lennar',     ctx: 'Customer dataset prep' },
+      { co: 'Dropbox',    ctx: 'Attribution computation' },
+    ],
+    pipelines:   [
+      { co: 'Vanguard',   ctx: 'AI-ready marketing data infra' },
+      { co: 'Lennar',     ctx: 'RAG ingestion pipeline' },
+    ],
+    c360:        [
+      { co: 'Vanguard',   ctx: 'Workplace participant 360 view' },
+      { co: 'Lennar',     ctx: 'Buyer journey dataset' },
+    ],
+
+    // AI / ML
+    bedrock:     [
+      { co: 'Lennar',     ctx: 'Tableau Conf talk: LLM content classification' },
+      { co: 'Vanguard',   ctx: 'Marketing automation backbone' },
+    ],
+    rag:         [
+      { co: 'Lennar',     ctx: 'Content performance classifier' },
+      { co: 'Vanguard',   ctx: 'Agentic context retrieval' },
+    ],
+    llm:         [
+      { co: 'Lennar',     ctx: 'Tableau Conf talk: text classification' },
+      { co: 'Vanguard',   ctx: 'Marketing copy classification' },
+    ],
+    agentic:     [
+      { co: 'Vanguard',   ctx: 'Current build — campaign agents' },
+    ],
+    sklearn:     [
+      { co: 'Lennar',     ctx: 'Propensity & LTV models' },
+      { co: 'Dropbox',    ctx: 'User behavior modeling' },
+    ],
+    embeddings:  [
+      { co: 'Lennar',     ctx: 'Content embeddings for RAG' },
+      { co: 'Vanguard',   ctx: 'Semantic search on marketing content' },
+    ],
+    vector:      [
+      { co: 'Lennar',     ctx: 'Bedrock vector store retrieval' },
+    ],
+    prompt:      [
+      { co: 'Vanguard',   ctx: 'Agentic workflow prompts' },
+      { co: 'Lennar',     ctx: 'LLM classifier prompts' },
+    ],
+    propensity:  [
+      { co: 'Lennar',     ctx: 'Buyer upsell scoring' },
+      { co: 'Vanguard',   ctx: 'Participant engagement models' },
+    ],
+
+    // Marketing Analytics
+    attribution: [
+      { co: 'Dropbox',    ctx: 'Subject matter expert' },
+      { co: 'Lennar',     ctx: 'Multi-channel attribution' },
+      { co: 'Vanguard',   ctx: 'Campaign attribution' },
+    ],
+    mta:         [
+      { co: 'Dropbox',    ctx: 'Mobile + web multi-touch' },
+      { co: 'Vanguard',   ctx: 'Cross-channel touchpoints' },
+    ],
+    ab:          [
+      { co: 'Dropbox',    ctx: 'Mobile experimentation' },
+      { co: 'Lennar',     ctx: 'Content & creative tests' },
+      { co: 'Vanguard',   ctx: 'Marketing A/B framework' },
+    ],
+    segment:     [
+      { co: 'Vanguard',   ctx: 'Participant segmentation' },
+      { co: 'Lennar',     ctx: 'Buyer cohort segmentation' },
+    ],
+    leadscore:   [
+      { co: 'Lennar',     ctx: 'Sales lead prioritization' },
+      { co: 'Vanguard',   ctx: 'Workplace upsell scoring' },
+    ],
+    ltv:         [
+      { co: 'Vanguard',   ctx: 'Participant lifetime value' },
+      { co: 'Lennar',     ctx: 'Buyer LTV modeling' },
+    ],
+    cohort:      [
+      { co: 'Dropbox',    ctx: 'Retention cohorts' },
+      { co: 'Vanguard',   ctx: 'Participant cohort analysis' },
+    ],
+    mobattr:     [
+      { co: 'Dropbox',    ctx: 'Subject matter expert (mobile)' },
+    ],
+    story:       [
+      { co: 'Tableau Conf', ctx: 'Conference presenter (2024)' },
+      { co: 'Vanguard',   ctx: 'Executive narratives' },
+      { co: 'Lennar',     ctx: 'Marketing storytelling' },
+    ],
+
+    // Channels
+    paid:        [
+      { co: 'Dropbox',    ctx: 'Paid acquisition analytics' },
+      { co: 'Lennar',     ctx: 'Paid media optimization' },
+    ],
+    sem:         [
+      { co: 'Dropbox',    ctx: 'SEM measurement' },
+      { co: 'Lennar',     ctx: 'Search campaign analytics' },
+    ],
+    email:       [
+      { co: 'Vanguard',   ctx: 'Lifecycle email analytics' },
+      { co: 'Lennar',     ctx: 'Buyer nurture campaigns' },
+    ],
+    mobile:      [
+      { co: 'Dropbox',    ctx: 'Mobile marketing SME' },
+    ],
+    display:     [
+      { co: 'Lennar',     ctx: 'Display campaign analytics' },
+      { co: 'Dropbox',    ctx: 'Programmatic display' },
+    ],
+
+    // Platforms
+    tableau:     [
+      { co: 'Tableau Conf', ctx: 'Conference presenter (2024)' },
+      { co: 'Vanguard',   ctx: 'Executive dashboards' },
+      { co: 'Lennar',     ctx: 'Marketing performance dashboards' },
+      { co: 'Dropbox',    ctx: 'Attribution dashboards' },
+    ],
+    salesforce:  [
+      { co: 'Lennar',     ctx: 'CRM + lead routing analytics' },
+      { co: 'Vanguard',   ctx: 'Sales activity reporting' },
+    ],
+    ga:          [
+      { co: 'Dropbox',    ctx: 'Web analytics measurement' },
+      { co: 'Lennar',     ctx: 'Site performance tracking' },
+    ],
+    gads:        [
+      { co: 'Lennar',     ctx: 'Paid search campaigns' },
+      { co: 'Dropbox',    ctx: 'Search performance' },
+    ],
+    dashboards:  [
+      { co: 'Vanguard',   ctx: 'Workplace leadership dashboards' },
+      { co: 'Lennar',     ctx: 'Marketing exec dashboards' },
+    ],
+  };
+
+  // Attach usage list + group label to each node
+  const groupLabels = {
+    language:     'Languages',
+    data:         'Data & Cloud',
+    ai:           'AI / ML',
+    mktanalytics: 'Marketing Analytics',
+    channel:      'Channels',
+    platform:     'Platforms',
+  };
+  nodes.forEach(n => { n.usage = usage[n.id] || []; });
+
+  // Build the tooltip element (attached to body for fixed positioning)
+  const tooltip = document.createElement('div');
+  tooltip.className = 'skill-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  tooltip.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(tooltip);
+
+  function showTooltip(n, ev) {
+    const g = groups[n.group];
+    const groupName = groupLabels[n.group] || n.group;
+    const rows = n.usage.length
+      ? n.usage.map(u => `
+          <div class="skill-tooltip-row">
+            <span class="skill-tooltip-co">${u.co}</span>
+            <span class="skill-tooltip-ctx">${u.ctx}</span>
+          </div>`).join('')
+      : `<div class="skill-tooltip-empty">Foundational skill across roles.</div>`;
+    tooltip.innerHTML = `
+      <div class="skill-tooltip-eyebrow" style="color:${g.color}">${groupName}</div>
+      <div class="skill-tooltip-title">${n.label}</div>
+      <div class="skill-tooltip-list">${rows}</div>
+    `;
+    // Show first (so offsetWidth/offsetHeight are non-zero) then position
+    tooltip.classList.add('visible');
+    tooltip.setAttribute('aria-hidden', 'false');
+    positionTooltip(n, ev);
+  }
+  function hideTooltip() {
+    tooltip.classList.remove('visible');
+    tooltip.setAttribute('aria-hidden', 'true');
+  }
+  // Bulletproof positioning: try SVG CTM, fall back to bounding rect, then mouse event.
+  function positionTooltip(n, ev) {
+    const tw = tooltip.offsetWidth || 280;
+    const th = tooltip.offsetHeight || 160;
+
+    let sx = null, sy = null;
+    try {
+      const ctm = svg.getScreenCTM();
+      if (ctm && typeof svg.createSVGPoint === 'function') {
+        const pt = svg.createSVGPoint();
+        pt.x = n.x; pt.y = n.y;
+        const screen = pt.matrixTransform(ctm);
+        sx = screen.x; sy = screen.y;
+      }
+    } catch (_) { /* swallow */ }
+
+    if ((sx == null || !isFinite(sx)) && n.el) {
+      const r = n.el.getBoundingClientRect();
+      if (r && r.width) { sx = r.left + r.width / 2; sy = r.top + r.height / 2; }
+    }
+    if ((sx == null || !isFinite(sx)) && ev) { sx = ev.clientX; sy = ev.clientY; }
+    if (sx == null || !isFinite(sx)) { sx = window.innerWidth / 2; sy = window.innerHeight / 2; }
+
+    const visR = (n.baseR || n.r || 8) * (0.55 + 0.9 * (n.z || 0.5));
+    let left = sx + visR + 18;
+    let top  = sy - 14;
+    if (left + tw > window.innerWidth - 12) left = sx - visR - 18 - tw;
+    if (left < 12) left = 12;
+    top = Math.max(12, Math.min(top, window.innerHeight - th - 12));
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+  }
+
+  // ── Edges: real-world skill co-usage ──
+  const edges = [
+    // Language backbone
+    ['sql', 'python'], ['python', 'pandas'], ['python', 'r'], ['python', 'bash'],
+    ['sql', 'tableau'], ['sql', 'pipelines'], ['sql', 'c360'],
+
+    // Data & Cloud
+    ['aws', 'bedrock'], ['aws', 's3'], ['aws', 'lambda'],
+    ['s3', 'pipelines'], ['lambda', 'pipelines'],
+    ['pandas', 'sklearn'], ['pipelines', 'c360'],
+
+    // AI / ML cluster
+    ['rag', 'bedrock'], ['rag', 'llm'], ['rag', 'embeddings'], ['rag', 'vector'],
+    ['embeddings', 'vector'], ['llm', 'bedrock'], ['llm', 'prompt'],
+    ['agentic', 'llm'], ['agentic', 'bedrock'], ['agentic', 'prompt'],
+    ['sklearn', 'propensity'], ['sklearn', 'embeddings'],
+    ['python', 'sklearn'], ['python', 'rag'], ['python', 'agentic'],
+
+    // Marketing analytics weave
+    ['attribution', 'mta'], ['attribution', 'paid'], ['attribution', 'sem'],
+    ['attribution', 'ga'], ['attribution', 'gads'], ['mta', 'mobattr'],
+    ['mobattr', 'mobile'], ['mobattr', 'paid'],
+    ['leadscore', 'propensity'], ['leadscore', 'salesforce'], ['leadscore', 'c360'],
+    ['segment', 'c360'], ['segment', 'email'], ['segment', 'ab'],
+    ['ab', 'python'], ['ab', 'email'], ['ab', 'paid'],
+    ['ltv', 'cohort'], ['ltv', 'sklearn'], ['cohort', 'segment'],
+    ['propensity', 'ltv'],
+
+    // Channels cross-link
+    ['paid', 'sem'], ['paid', 'display'], ['paid', 'mobile'],
+    ['sem', 'gads'], ['display', 'gads'], ['email', 'salesforce'],
+
+    // Platforms
+    ['tableau', 'dashboards'], ['tableau', 'story'],
+    ['dashboards', 'story'], ['story', 'attribution'],
+    ['ga', 'gads'], ['ga', 'paid'], ['salesforce', 'c360'], ['salesforce', 'attribution'],
+
+    // Bedrock work bridges domains
+    ['bedrock', 'c360'], ['llm', 'email'], ['llm', 'story'],
+  ];
+
+  // ── Deterministic pseudo-random for stable depth/jitter per node ──
+  function hashCode(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+    return Math.abs(h);
+  }
+  function rand01(s, salt) {
+    const v = Math.sin(hashCode(s + ':' + salt)) * 43758.5453;
+    return v - Math.floor(v);
+  }
+
+  // ── Assign depth (z in [0,1]) per node. Clusters get a base depth, nodes jitter around it.
+  //    Plus: core (importance=3) nodes bias toward the front. ──
+  const groupBaseZ = {
+    ai:           0.78,
+    data:         0.62,
+    mktanalytics: 0.55,
+    language:     0.48,
+    platform:     0.40,
+    channel:      0.30,
+  };
+  nodes.forEach(n => {
+    const base = groupBaseZ[n.group] ?? 0.5;
+    const jitter = (rand01(n.id, 'z') - 0.5) * 0.32;
+    const corePush = n.importance === 3 ? 0.10 : (n.importance === 1 ? -0.06 : 0);
+    n.z = Math.max(0.06, Math.min(0.98, base + jitter + corePush));
+    // Base radius (intrinsic size), separate from depth-scaled visible radius
+    n.baseR = n.importance === 3 ? 10 : (n.importance === 2 ? 7.5 : 5.5);
+  });
+
+  // ── Initial positions: scatter near each cluster anchor ──
+  nodes.forEach(n => {
+    const a = groups[n.group];
+    n.x = a.ax + (rand01(n.id, 'x') - 0.5) * 140;
+    n.y = a.ay + (rand01(n.id, 'y') - 0.5) * 140;
+    n.vx = 0; n.vy = 0;
+    // Simulation collision radius — use the effective (depth-scaled) radius so layout respects perceived size
+    n.r = n.baseR * (0.55 + 0.9 * n.z);
+  });
+
+  const idMap = new Map(nodes.map(n => [n.id, n]));
+  const edgeList = edges
+    .map(([a, b]) => ({ source: idMap.get(a), target: idMap.get(b) }))
+    .filter(e => e.source && e.target);
+
+  // ── Build SVG: clean layered scene (back→front) ──
+  //   Scene group (parallax + drift):
+  //     - Edge layer (connection lines)
+  //     - Halo layer (currently unused, kept for future)
+  //     - Node layer (one group per node: halo + circle + label)
+
+  const scene = document.createElementNS(NS, 'g');
+  scene.setAttribute('class', 'const-scene');
+  svg.appendChild(scene);
+
+  const edgeLayer = document.createElementNS(NS, 'g');
+  const haloLayer = document.createElementNS(NS, 'g');
+  const nodeLayer = document.createElementNS(NS, 'g');
+  scene.appendChild(edgeLayer);
+  scene.appendChild(haloLayer);
+  scene.appendChild(nodeLayer);
+
+  // Edges (flat hairlines — opacity will be modulated by node depth at render time)
+  edgeList.forEach(e => {
+    const line = document.createElementNS(NS, 'line');
+    line.setAttribute('class', 'const-edge');
+    e.el = line;
+    edgeLayer.appendChild(line);
+  });
+
+  // ── Nodes (flat: filled circle + colored stroke ring + soft halo + label) ──
+  nodes.forEach(n => {
+    const isCore = n.importance === 3;
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'const-node-group');
+    g.dataset.id = n.id;
+    g.setAttribute('tabindex', '0');
+    g.style.color = groups[n.group].color;  // halo uses currentColor
+
+    // Soft outer halo (low-opacity disc) — drawn first so it's behind.
+    const halo = document.createElementNS(NS, 'circle');
+    halo.setAttribute('class', 'const-halo');
+    halo.setAttribute('r', n.baseR * (isCore ? 3.0 : 2.4));
+    g.appendChild(halo);
+    n.halo = halo;
+
+    // Main node — flat: translucent fill + colored stroke ring
+    const circle = document.createElementNS(NS, 'circle');
+    circle.setAttribute('class', 'const-node ' + groupClass[n.group]);
+    // Cores slightly larger to bias visual weight
+    const visualR = n.baseR * (isCore ? 1.12 : 1);
+    circle.setAttribute('r', visualR);
+    circle.setAttribute('fill', hexToRgba(groups[n.group].color, isCore ? 0.26 : 0.18));
+    g.appendChild(circle);
+    n.circle = circle;
+
+    // Label
+    const text = document.createElementNS(NS, 'text');
+    text.setAttribute('class', 'const-label' + (n.importance === 3 ? ' core' : ''));
+    text.setAttribute('y', -(n.baseR + 6));
+    text.textContent = n.label;
+    g.appendChild(text);
+    n.labelEl = text;
+
+    nodeLayer.appendChild(g);
+    n.el = g;
+
+    // Hover / focus: highlight neighborhood + show tooltip
+    function focusNode(ev) {
+      const connected = new Set([n.id]);
+      edgeList.forEach(ed => {
+        if (ed.source === n || ed.target === n) {
+          connected.add(ed.source.id);
+          connected.add(ed.target.id);
+          ed.el.classList.add('highlighted');
+        } else {
+          ed.el.classList.add('faded');
+        }
+      });
+      nodes.forEach(o => {
+        if (!connected.has(o.id)) o.el.classList.add('dimmed');
+      });
+      g.classList.add('is-focused');
+      n.focused = true;
+      showTooltip(n, ev);
+    }
+    function blurNode() {
+      edgeList.forEach(ed => {
+        ed.el.classList.remove('highlighted');
+        ed.el.classList.remove('faded');
+      });
+      nodes.forEach(o => o.el.classList.remove('dimmed'));
+      g.classList.remove('is-focused');
+      n.focused = false;
+      hideTooltip();
+    }
+    g.addEventListener('mouseenter', focusNode);
+    g.addEventListener('mouseleave', blurNode);
+    g.addEventListener('mousemove', (ev) => {
+      if (n.focused) positionTooltip(n, ev);
+    });
+    g.addEventListener('focus', () => focusNode());
+    g.addEventListener('blur', blurNode);
+  });
+
+  // Hex (#RRGGBB) -> rgba string helper
+  function hexToRgba(hex, a) {
+    const m = hex.replace('#', '');
+    const r = parseInt(m.substr(0, 2), 16);
+    const g = parseInt(m.substr(2, 2), 16);
+    const b = parseInt(m.substr(4, 2), 16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  // ── Force simulation with cluster centers + spring + repulsion ──
+  let running = false;
+  let frame = 0;
+  const MAX_FRAMES = 600;
+  const STOP_VELOCITY = 0.04;
+
+  function tick() {
+    frame++;
+
+    // 1) Cluster gravity
+    nodes.forEach(n => {
+      const a = groups[n.group];
+      n.vx += (a.ax - n.x) * 0.0035;
+      n.vy += (a.ay - n.y) * 0.0035;
+    });
+
+    // 2) Mild center gravity
+    nodes.forEach(n => {
+      n.vx += (cx - n.x) * 0.0004;
+      n.vy += (cy - n.y) * 0.0004;
+    });
+
+    // 3) Repulsion (use depth-scaled r for collision spacing)
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const dist2 = dx*dx + dy*dy + 0.01;
+        const dist = Math.sqrt(dist2);
+        const minSep = (a.r + b.r) * 2.0;
+        const strength = dist < minSep ? 3200 : 2000;
+        const repulsion = strength / dist2;
+        const fx = (dx / dist) * repulsion;
+        const fy = (dy / dist) * repulsion;
+        a.vx -= fx; a.vy -= fy;
+        b.vx += fx; b.vy += fy;
+      }
+    }
+
+    // 4) Spring attraction along edges
+    edgeList.forEach(e => {
+      const dx = e.target.x - e.source.x;
+      const dy = e.target.y - e.source.y;
+      const dist = Math.sqrt(dx*dx + dy*dy) + 0.01;
+      const sameGroup = e.source.group === e.target.group;
+      const idealLen = sameGroup ? 145 : 270;
+      const k = sameGroup ? 0.016 : 0.010;
+      const force = (dist - idealLen) * k;
+      const fx = (dx / dist) * force;
+      const fy = (dy / dist) * force;
+      e.source.vx += fx; e.source.vy += fy;
+      e.target.vx -= fx; e.target.vy -= fy;
+    });
+
+    // 5) Damping + boundary — skip dragged AND pinned nodes (they hold their position).
+    const pad = 40;
+    let totalV = 0;
+    nodes.forEach(n => {
+      if (n === draggedNode || n.pinned) { n.vx = 0; n.vy = 0; return; }
+      n.vx *= 0.88; n.vy *= 0.88;
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < pad)        { n.x = pad;        n.vx *= -0.4; }
+      if (n.x > W - pad)    { n.x = W - pad;    n.vx *= -0.4; }
+      if (n.y < pad)        { n.y = pad;        n.vy *= -0.4; }
+      if (n.y > H - pad)    { n.y = H - pad;    n.vy *= -0.4; }
+      totalV += Math.abs(n.vx) + Math.abs(n.vy);
+    });
+
+    renderScene();
+
+    const avgV = totalV / nodes.length;
+    // Don't let the sim settle while a node is being dragged — neighbors need
+    // the springs to keep pulling them toward the dragged star.
+    if (!draggedNode && ((avgV < STOP_VELOCITY && frame > 80) || frame >= MAX_FRAMES)) {
+      running = false;
+      simSettled = true;
+      // Once settled, keep an ambient render loop running for parallax/drift updates
+      ensureAmbientLoop();
+      return;
+    }
+    if (running) requestAnimationFrame(tick);
+  }
+
+  // ── Mouse parallax (per-node, depth-weighted) state ──
+  let mx = 0, my = 0;        // normalized cursor offset from wrap center, [-1, 1]
+  let mxTarget = 0, myTarget = 0;
+  let ambStart = performance.now();
+  let simSettled = false;
+
+  // Cache of edge endpoint offsets so edges follow parallax-shifted nodes
+  function nodeOffset(n) {
+    // While any node is being dragged, freeze parallax — fighting the cursor is disorienting.
+    if (draggedNode) return { dx: 0, dy: 0 };
+    // Pinned nodes don't parallax — they stay exactly where the user dropped them.
+    if (n.pinned) return { dx: 0, dy: 0 };
+    // Depth-relative parallax: nodes nearer to viewer shift more,
+    // nodes farther shift less (real parallax).
+    // (z - 0.5) gives a signed multiplier; near nodes get + shift, far nodes - shift,
+    // creating a "leaning into the scene" feel as the cursor moves.
+    const amp = 40 * (n.z - 0.5);
+    return { dx: mx * amp, dy: my * amp };
+  }
+
+  // ── Click-and-drag state ──
+  // Single global dragged node — the user can't drag two stars at once.
+  let draggedNode = null;
+  let dragOffsetX = 0, dragOffsetY = 0;
+  // Each node remembers its "home" z (assigned at init). While dragged we
+  // interpolate n.z toward 1.0; on release we ease it back toward homeZ over ~1.6s.
+  nodes.forEach(n => { n.homeZ = n.z; });
+
+  // Active z-restore tweens: { node, fromZ, toZ, t0, dur }
+  const zTweens = [];
+  function tweenZ(n, toZ, dur) {
+    // Drop any existing tween for this node
+    for (let i = zTweens.length - 1; i >= 0; i--) {
+      if (zTweens[i].node === n) zTweens.splice(i, 1);
+    }
+    zTweens.push({ node: n, fromZ: n.z, toZ: toZ, t0: performance.now(), dur: dur });
+  }
+  function stepZTweens(now) {
+    if (zTweens.length === 0) return false;
+    let touched = false;
+    for (let i = zTweens.length - 1; i >= 0; i--) {
+      const tw = zTweens[i];
+      const u = Math.min(1, (now - tw.t0) / tw.dur);
+      // Springy ease-out-back: overshoots a touch then settles
+      const e = 1 - Math.pow(1 - u, 3);
+      const overshoot = (u < 1 ? Math.sin(u * Math.PI) * 0.04 : 0);
+      tw.node.z = tw.fromZ + (tw.toZ - tw.fromZ) * e + (tw.toZ - tw.fromZ) * overshoot * 0.15;
+      touched = true;
+      if (u >= 1) {
+        tw.node.z = tw.toZ;
+        zTweens.splice(i, 1);
+      }
+    }
+    return touched;
+  }
+
+  // Convert a pointer client (x,y) into SVG userspace coords via the standard CTM-inverse pattern.
+  function clientToSvg(clientX, clientY) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return null;
+    const pt = svg.createSVGPoint();
+    pt.x = clientX; pt.y = clientY;
+    const inv = ctm.inverse();
+    return pt.matrixTransform(inv);
+  }
+
+  function startDrag(n, clientX, clientY) {
+    if (draggedNode) return;
+    const p = clientToSvg(clientX, clientY);
+    if (!p) return;
+    draggedNode = n;
+    // If this node was pinned from a previous drop, un-pin it so it follows the cursor freshly.
+    n.pinned = false;
+    // Account for current parallax offset so the node doesn't jump on grab.
+    // (Parallax is suppressed during drag, so subtract its pre-drag contribution.)
+    const preOff = (function() {
+      const amp = 40 * (n.z - 0.5);
+      return { dx: mx * amp, dy: my * amp };
+    })();
+    dragOffsetX = (p.x - (n.x + preOff.dx));
+    dragOffsetY = (p.y - (n.y + preOff.dy));
+    n.el.classList.add('dragging');
+    // Tween z toward 1.0 (full foreground) over the drag — start the interpolation now.
+    tweenZ(n, 1.0, 700);
+    // Make sure the sim is running so connected nodes get pulled via springs.
+    startSim();
+    // Hide tooltip during drag — less visual noise.
+    if (n.focused) hideTooltip();
+  }
+
+  function moveDrag(clientX, clientY) {
+    if (!draggedNode) return;
+    const p = clientToSvg(clientX, clientY);
+    if (!p) return;
+    const n = draggedNode;
+    n.x = p.x - dragOffsetX;
+    n.y = p.y - dragOffsetY;
+    n.vx = 0; n.vy = 0;  // pin exactly to cursor each frame
+  }
+
+  function endDrag() {
+    if (!draggedNode) return;
+    const n = draggedNode;
+    n.el.classList.remove('dragging');
+    // Pin the node where the user dropped it — keeps its position AND its foreground z.
+    // Re-grabbing the node will un-pin it (see startDrag).
+    n.pinned = true;
+    n.el.classList.add('pinned');
+    n.vx = 0; n.vy = 0;
+    // Cancel any in-flight z-tween so z stays where it landed (close to 1.0).
+    for (let i = zTweens.length - 1; i >= 0; i--) {
+      if (zTweens[i].node === n) zTweens.splice(i, 1);
+    }
+    // Lock z at the foregrounded value so the node visually stays where it was dropped.
+    n.z = Math.max(n.z, 0.9);
+    draggedNode = null;
+    // Let neighbors settle around the new pinned position via springs.
+    startSim();
+  }
+
+  // Bind drag handlers to each node group. (Called below after nodes have .el.)
+  function bindDrag(n) {
+    const g = n.el;
+    g.addEventListener('mousedown', (ev) => {
+      if (ev.button !== 0) return;
+      ev.preventDefault();
+      startDrag(n, ev.clientX, ev.clientY);
+    });
+    g.addEventListener('touchstart', (ev) => {
+      if (ev.touches.length !== 1) return;
+      const t = ev.touches[0];
+      startDrag(n, t.clientX, t.clientY);
+    }, { passive: true });
+  }
+  nodes.forEach(bindDrag);
+
+  // Document-level move/up so dragging keeps working when the cursor leaves the node.
+  document.addEventListener('mousemove', (ev) => {
+    if (draggedNode) moveDrag(ev.clientX, ev.clientY);
+  });
+  document.addEventListener('mouseup', () => { if (draggedNode) endDrag(); });
+  document.addEventListener('touchmove', (ev) => {
+    if (!draggedNode || ev.touches.length !== 1) return;
+    const t = ev.touches[0];
+    moveDrag(t.clientX, t.clientY);
+    ev.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchend', () => { if (draggedNode) endDrag(); });
+  document.addEventListener('touchcancel', () => { if (draggedNode) endDrag(); });
+
+  function renderScene() {
+    // Per-node: position + depth-scaled size + opacity + label visibility + parallax
+    nodes.forEach(n => {
+      // Suppress parallax shift on the node being dragged so it stays glued to the cursor
+      const off = (n === draggedNode) ? { dx: 0, dy: 0 } : nodeOffset(n);
+      const tx = n.x + off.dx;
+      const ty = n.y + off.dy;
+      // Depth-driven visible scale and opacity — sharper falloff so distant nodes
+      // (low z) effectively disappear, "only the close nodes" show by default.
+      const visScale = 0.35 + 1.1 * n.z;
+      const visOpacity = Math.max(0, (n.z - 0.25) * 1.4);
+      // When focused or dragging, pop forward
+      const focusedBoost = (n.focused || n === draggedNode) ? 1.0 : 0;
+      const effScale = visScale * (1 + focusedBoost * 0.25);
+      const effOpacity = Math.min(1, visOpacity + focusedBoost * 0.6);
+
+      n.el.setAttribute('transform', `translate(${tx}, ${ty}) scale(${effScale.toFixed(3)})`);
+      n.el.style.opacity = effOpacity.toFixed(3);
+
+      // Label opacity: only render text when z high enough (or focused/dragging)
+      const labelOp = (n.focused || n === draggedNode) ? 1 : Math.max(0, (n.z - 0.55)) * 2.2;
+      n.labelEl.style.opacity = Math.min(1, labelOp).toFixed(3);
+
+      // Depth-driven label size: as a node comes forward (z up), its label grows
+      // on a modular type scale (13 → 16 → 19, core: 15 → 19 → 23). This is ON TOP
+      // of the parent <g> scale, so visually the label dominates as the node pops.
+      const baseSize = (n.importance === 3) ? 15 : 13;
+      const depthBoost = Math.max(0, (n.z - 0.55)) * 9;  // 0 at z<=0.55, ~4 at z=1.0
+      const focusBoost = (n.focused || n === draggedNode || n.pinned) ? 3 : 0;
+      const labelSize = baseSize + depthBoost + focusBoost;
+      n.labelEl.style.fontSize = labelSize.toFixed(1) + 'px';
+      // Heavier weight as nodes come forward for crisper readability on dark
+      if (n.z > 0.78 || n.focused || n === draggedNode || n.pinned) {
+        n.labelEl.style.fontWeight = '700';
+      } else if (n.z > 0.6) {
+        n.labelEl.style.fontWeight = '600';
+      } else {
+        n.labelEl.style.fontWeight = '500';
+      }
+
+      // Cache last screen position for edge rendering
+      n._sx = tx;
+      n._sy = ty;
+    });
+
+    // Edges: connect parallax-shifted positions; opacity = avg of endpoint depths
+    edgeList.forEach(e => {
+      e.el.setAttribute('x1', e.source._sx);
+      e.el.setAttribute('y1', e.source._sy);
+      e.el.setAttribute('x2', e.target._sx);
+      e.el.setAttribute('y2', e.target._sy);
+      const op = 0.18 + 0.55 * ((e.source.z + e.target.z) / 2 - 0.3);
+      e.el.style.opacity = Math.max(0.05, Math.min(0.85, op)).toFixed(3);
+    });
+  }
+
+  // Ambient drift + parallax smoothing loop (runs continuously after sim settles)
+  let ambientRunning = false;
+  function ensureAmbientLoop() {
+    // Always run the ambient loop — even with reduced motion, we still need it
+    // to step drag z-tweens and re-render the dragged node. The internal
+    // drift/parallax math is cheap; visually, the .const-scene transform is
+    // disabled under prefers-reduced-motion via CSS anyway.
+    if (ambientRunning) return;
+    ambientRunning = true;
+    requestAnimationFrame(ambientTick);
+  }
+  function ambientTick(t) {
+    if (!ambientRunning) return;
+    // Smooth mouse parallax toward target
+    mx += (mxTarget - mx) * 0.08;
+    my += (myTarget - my) * 0.08;
+
+    // Ambient camera drift: slow sine on scene transform (NOT per-node, that would be wasteful)
+    const dt = (t - ambStart) / 1000;
+    const driftX = Math.sin(dt * (Math.PI * 2 / 14)) * 7;   // ~14s period, ±7px
+    const driftY = Math.cos(dt * (Math.PI * 2 / 18)) * 5;   // ~18s period, ±5px
+    scene.style.setProperty('--ax', driftX.toFixed(2) + 'px');
+    scene.style.setProperty('--ay', driftY.toFixed(2) + 'px');
+
+    // Advance any active z tweens (drag pop-forward / spring back to home)
+    stepZTweens(t);
+
+    // Re-render per-node parallax (cheap: just transforms) — also re-renders during
+    // drag so the dragged node follows the cursor immediately.
+    if (simSettled || draggedNode) renderScene();
+
+    requestAnimationFrame(ambientTick);
+  }
+
+  function startSim() {
+    if (running) return;
+    running = true;
+    frame = 0;
+    simSettled = false;
+    requestAnimationFrame(tick);
+  }
+
+  // ── IntersectionObserver: start sim + map section progress to scroll-driven depth push ──
+  const cObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) startSim();
+    });
+  }, { threshold: 0.15 });
+  cObs.observe(svg);
+
+  // Scroll → depth-z mapping. As the wrap moves through the viewport, push z forward then back.
+  if (!reducedMotion) {
+    let scrollPending = false;
+    const onScroll = () => {
+      if (scrollPending) return;
+      scrollPending = true;
+      requestAnimationFrame(() => {
+        const r = wrap.getBoundingClientRect();
+        const vh = window.innerHeight;
+        // progress: 0 when wrap top hits bottom of viewport, 1 when wrap bottom hits top
+        const total = r.height + vh;
+        const prog = Math.max(0, Math.min(1, (vh - r.top) / total));
+        // Map [0,1] to a smooth in-out curve centered at 0.5, range ~[-0.6, 0.8]
+        const eased = Math.sin(prog * Math.PI);            // 0 → 1 → 0
+        const z = eased * 0.8 - (1 - eased) * 0.3;          // push forward in middle, slight recede at edges
+        wrap.style.setProperty('--depth-z', z.toFixed(3));
+        scrollPending = false;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  // ── Mouse parallax: only on desktop, only if motion allowed ──
+  if (!reducedMotion && window.matchMedia('(min-width: 769px)').matches) {
+    wrap.addEventListener('mousemove', (ev) => {
+      const r = wrap.getBoundingClientRect();
+      mxTarget = ((ev.clientX - r.left) / r.width  - 0.5) * 2;  // -1..1
+      myTarget = ((ev.clientY - r.top)  / r.height - 0.5) * 2;
+    });
+    wrap.addEventListener('mouseleave', () => {
+      mxTarget = 0; myTarget = 0;
+    });
+  }
+  // Kick the ambient loop regardless so drag z-tweens and re-render run on
+  // every device. Internally it gates the visible drift/parallax appropriately.
+  ensureAmbientLoop();
+
+  // Reposition tooltip on scroll / resize while it's open (it's position:fixed but anchored to a moving scene)
+  window.addEventListener('scroll', () => {
+    if (tooltip.classList.contains('visible')) {
+      const focused = nodes.find(n => n.focused);
+      if (focused) positionTooltip(focused);
+    }
+  }, { passive: true });
+  window.addEventListener('resize', () => {
+    if (tooltip.classList.contains('visible')) {
+      const focused = nodes.find(n => n.focused);
+      if (focused) positionTooltip(focused);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
